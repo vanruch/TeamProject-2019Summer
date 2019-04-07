@@ -1,18 +1,11 @@
 import React, {Component} from 'react';
-import PropTypes from 'prop-types';
 import {getAllImages} from '../../utils';
-import {withStyles} from '@material-ui/core/styles';
-
-const styles = {
-  image: {
-    height: '100%',
-    width: '100%'
-  },
-};
+import {Canvas} from '../Canvas';
 
 class PdfView extends Component {
   state = {
-    image: null
+    image: null,
+    annotations: []
   };
 
   componentDidMount() {
@@ -20,11 +13,15 @@ class PdfView extends Component {
     this.setState({image});
   }
 
+  onAnnotationsChange(newAnnotations) {
+    this.setState({annotations: newAnnotations});
+  }
+
   render() {
-    const {classes} = this.props;
     return (
       <div>
-        <img src={this.state.image} className={classes.image}/>
+        {this.state.image && <Canvas image={this.state.image} annotations={this.state.annotations}
+                                     onAnnotationsChange={this.onAnnotationsChange.bind(this)}/>}
       </div>
     );
   }
@@ -33,4 +30,4 @@ class PdfView extends Component {
 PdfView.propTypes = {};
 PdfView.defaultProps = {};
 
-export default withStyles(styles)(PdfView);
+export default PdfView;
