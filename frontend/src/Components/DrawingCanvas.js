@@ -38,17 +38,22 @@ class TransformerComponent extends React.Component {
   }
 
   checkNode() {
+    // here we need to manually attach or detach Transformer node
     const stage = this.transformer.getStage();
     const {selectedShapeName} = this.props;
 
     const selectedNode = stage.findOne('.' + selectedShapeName);
+    console.log(selectedNode);
+    // do nothing if selected node is already attached
     if (selectedNode === this.transformer.node()) {
       return;
     }
 
     if (selectedNode) {
+      // attach to another node
       this.transformer.attachTo(selectedNode);
     } else {
+      // remove transformer
       this.transformer.detach();
     }
     this.transformer.getLayer().batchDraw();
@@ -71,6 +76,7 @@ class DrawingCanvas extends Component {
   };
 
   handleStageMouseDown = e => {
+    // clicked on stage - cler selection
     if (e.target === e.target.getStage()) {
       this.setState({
         selectedShapeName: ''
