@@ -3,38 +3,12 @@ import {Image, Layer, Rect, Stage} from 'react-konva';
 import {Item, Menu, MenuProvider} from 'react-contexify';
 import React from 'react';
 import 'react-contexify/dist/ReactContexify.min.css';
+import DrawingCanvas from './DrawingCanvas';
 
 const MyMenu = ({onNewAdnotationClick, ...props}) =>
   <Menu id='canvas_menu'>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
   </Menu>;
-
-const getColorByIndex = (ind) => {
-  // From https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
-  const COLORS = [
-    '#e6194b',
-    '#3cb44b',
-    '#ffe119',
-    '#4363d8',
-    '#f58231',
-    '#911eb4',
-    '#46f0f0',
-    '#f032e6',
-    '#bcf60c',
-    '#fabebe',
-    '#008080',
-    '#e6beff',
-    '#9a6324',
-    '#fffac8',
-    '#800000',
-    '#aaffc3',
-    '#808000',
-    '#ffd8b1',
-    '#000075',
-    '#808080',
-    '#000000'];
-  return COLORS[ind % COLORS.length];
-};
 
 export const Canvas = (props) => {
   const [image] = useImage(props.image);
@@ -49,13 +23,7 @@ export const Canvas = (props) => {
         <Layer>
           <Image image={image}/>
         </Layer>
-        <Layer>
-          {props.annotations && props.annotations.map(({x1, y1, x2, y2}, ind) =>
-            <Rect
-              x={x1} y={y1} width={x2 - x1} height={y2 - y1} draggable stroke={getColorByIndex(ind)}
-            />
-          )}
-        </Layer>
+        <DrawingCanvas annotations={props.annotations}/>
       </Stage>
     </MenuProvider>
     <MyMenu onNewAdnotationClick={({event, props: p2}) => {
