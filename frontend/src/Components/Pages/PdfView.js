@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {getAllImages} from '../../utils';
-import {Canvas} from '../Canvas';
+import Canvas from '../Canvas';
 
 class PdfView extends Component {
   state = {
