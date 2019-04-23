@@ -70,7 +70,7 @@ class DrawingCanvas extends Component {
     selectedRect: null
   };
 
-  handleStageMouseDown = e => {
+  handleStageMouseDown(e) {
     if (e.target === e.target.getStage()) {
       this.setState({
         selectedShapeName: ''
@@ -91,10 +91,10 @@ class DrawingCanvas extends Component {
 
   render() {
     return (
-      <Layer onMouseDown={this.handleStageMouseDown}>
+      <Layer onMouseDown={this.handleStageMouseDown.bind(this)}>
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
           <Rect
-            x={x1} y={y1} width={x2 - x1} height={y2 - y1} draggable stroke={getColorByIndex(ind)} strokeScaleEnabled={false} name={`rect${ind}`}
+            x={x1} y={y1} width={x2 - x1} height={y2 - y1} draggable onDragEnd={(args) => this.props.onAnnotationMove(args, ind)} stroke={getColorByIndex(ind)} strokeScaleEnabled={false} name={`rect${ind}`}
           />
         )}
         <TransformerComponent selectedShapeName={this.state.selectedRect}/>
