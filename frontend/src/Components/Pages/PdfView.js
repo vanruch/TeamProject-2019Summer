@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {getAllImages} from '../../utils';
 import Canvas from '../Canvas';
+import Popup from 'react-popup';
+import Prompt from '../Prompt';
 
 class PdfView extends Component {
   state = {
@@ -15,6 +17,34 @@ class PdfView extends Component {
 
   onAnnotationsChange(newAnnotations) {
     this.setState({annotations: newAnnotations});
+    Popup.registerPlugin('prompt', function (defaultValue, placeholder, callback) {
+      let promptValue = null;
+      let promptChange = function (value) {
+        promptValue = value;
+      };
+
+      this.create({
+        title: 'What\'s your name?',
+        content: <Prompt onChange={promptChange} placeholder={placeholder} value={defaultValue} />,
+        buttons: {
+          left: ['cancel'],
+          right: [{
+            text: 'Save',
+            key: '⌘+s',
+            className: 'success',
+            action: function () {
+              callback(promptValue);
+              Popup.close();
+            }
+          }]
+        }
+      });
+    });
+
+    /** Call the plugin */
+    Popup.plugins().prompt('', 'Type your name', function (value) {
+      Popup.alert('You typed: ' + value);
+    });
   }
 
   render() {
