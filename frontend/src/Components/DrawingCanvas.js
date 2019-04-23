@@ -38,22 +38,17 @@ class TransformerComponent extends React.Component {
   }
 
   checkNode() {
-    // here we need to manually attach or detach Transformer node
     const stage = this.transformer.getStage();
     const {selectedShapeName} = this.props;
 
     const selectedNode = stage.findOne('.' + selectedShapeName);
-    console.log(selectedNode);
-    // do nothing if selected node is already attached
     if (selectedNode === this.transformer.node()) {
       return;
     }
 
     if (selectedNode) {
-      // attach to another node
       this.transformer.attachTo(selectedNode);
     } else {
-      // remove transformer
       this.transformer.detach();
     }
     this.transformer.getLayer().batchDraw();
@@ -75,8 +70,7 @@ class DrawingCanvas extends Component {
     selectedRect: null
   };
 
-  handleStageMouseDown = e => {
-    // clicked on stage - cler selection
+  handleStageMouseDown(e) {
     if (e.target === e.target.getStage()) {
       this.setState({
         selectedShapeName: ''
@@ -97,10 +91,10 @@ class DrawingCanvas extends Component {
 
   render() {
     return (
-      <Layer onMouseDown={this.handleStageMouseDown}>
+      <Layer onMouseDown={this.handleStageMouseDown.bind(this)}>
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
           <Rect
-            x={x1} y={y1} width={x2 - x1} height={y2 - y1} draggable stroke={getColorByIndex(ind)} strokeScaleEnabled={false} name={`rect${ind}`}
+            x={x1} y={y1} width={x2 - x1} height={y2 - y1} draggable onDragEnd={(args) => this.props.onAnnotationMove(args, ind)} stroke={getColorByIndex(ind)} strokeScaleEnabled={false} name={`rect${ind}`}
           />
         )}
         <TransformerComponent selectedShapeName={this.state.selectedRect}/>

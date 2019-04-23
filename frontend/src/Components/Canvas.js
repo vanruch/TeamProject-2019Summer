@@ -23,9 +23,9 @@ class MyCanvas extends Component {
 
   dragBound({x, y}) {
     return {
-      x: Math.min(0, Math.max(x, (-this.props.image.width)*this.state.scale.x+window.innerWidth)),
-      y: Math.min(0, Math.max(y, (-this.props.image.height)*this.state.scale.y+window.innerHeight))
-    }
+      x: Math.min(0, Math.max(x, (-this.props.image.width) * this.state.scale.x + window.innerWidth)),
+      y: Math.min(0, Math.max(y, (-this.props.image.height) * this.state.scale.y + window.innerHeight))
+    };
   }
 
   onZoom({evt, target}) {
@@ -42,9 +42,9 @@ class MyCanvas extends Component {
     >
       <Layer>
         <Image image={this.props.image}
-               />
+        />
       </Layer>
-      <DrawingCanvas annotations={this.props.annotations}/>
+      <DrawingCanvas annotations={this.props.annotations} onAnnotationMove={this.props.onAnnotationMove}/>
     </Stage>;
   }
 }
@@ -52,6 +52,18 @@ class MyCanvas extends Component {
 MyCanvas.propTypes = {
   image: PropTypes.any,
   props: PropTypes.any
+};
+
+const moveAnnotation = (target, index, annotations) => {
+  const {x, y, width, height} = target.attrs;
+  annotations[index] = {
+    ...annotations[index],
+    x1: x,
+    x2: x + width,
+    y1: y,
+    y2: y + height
+  };
+  return annotations;
 };
 
 const WithMenu = (props) => {
@@ -63,7 +75,9 @@ const WithMenu = (props) => {
   image.width = window.innerWidth;
   return <div>
     <MenuProvider id="canvas_menu">
-      <MyCanvas image={image} annotations={props.annotations}/>
+      <MyCanvas image={image} annotations={props.annotations}
+                onAnnotationMove={({currentTarget}, index) => props.onAnnotationsChange(
+                  moveAnnotation(currentTarget, index, props.annotations))}/>
     </MenuProvider>
     <MyMenu onNewAdnotationClick={({event}) => {
       props.onAnnotationsChange([
@@ -75,7 +89,8 @@ const WithMenu = (props) => {
           type: null,
           text: '',
           subRegions: []
-        }]);
+        }
+      ]);
     }}/>
   </div>;
 };
