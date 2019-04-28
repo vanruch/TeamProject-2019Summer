@@ -16,16 +16,17 @@ class PdfView extends Component {
   }
 
   onAnnotationsChange(newAnnotations) {
-    this.setState({annotations: newAnnotations});
-    Popup.registerPlugin('prompt', function (defaultValue, placeholder, callback) {
-      let promptValue = null;
-      let promptChange = function (value) {
-        promptValue = value;
+    Popup.registerPlugin('prompt', function (callback) {
+      let promptType = null;
+      let promptText = null;
+      let promptChange = function (type, text) {
+        promptType = type;
+        promptText = text;
       };
 
       this.create({
-        title: 'What\'s your name?',
-        content: <Prompt onChange={promptChange} placeholder={placeholder} value={defaultValue} />,
+        title: 'New annotaion',
+        content: <Prompt type="linear_plot" text="" onChange={promptChange} />,
         buttons: {
           left: ['cancel'],
           right: [{
@@ -33,7 +34,7 @@ class PdfView extends Component {
             key: '⌘+s',
             className: 'success',
             action: function () {
-              callback(promptValue);
+              callback(promptType, promptText);
               Popup.close();
             }
           }]
@@ -42,9 +43,12 @@ class PdfView extends Component {
     });
 
     /** Call the plugin */
-    Popup.plugins().prompt('', 'Type your name', function (value) {
-      Popup.alert('You typed: ' + value);
+    Popup.plugins().prompt(function (type, text) {
+      newAnnotations[newAnnotations.length - 1].type = type;
+      newAnnotations[newAnnotations.length - 1].text = text;
     });
+    this.setState({annotations: newAnnotations});
+    console.log(newAnnotations);
   }
 
   render() {

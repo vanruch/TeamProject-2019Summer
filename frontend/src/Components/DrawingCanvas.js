@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
 import {Layer, Rect, Transformer} from 'react-konva';
+import Popup from 'react-popup';
+import Prompt from './Prompt';
 
 const getColorByIndex = (ind) => {
   // From https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -104,11 +106,53 @@ class DrawingCanvas extends Component {
     // }
   };
 
+  prepareHandleClick(ind) {
+    Popup.registerPlugin('prompt', function ( defaultType, defaultText, callback) {
+      let promptType = null;
+      let promptText = null;
+      let promptChange = function (type, text) {
+        promptType = type;
+        promptText = text;
+      };
+
+      this.create({
+        title: 'Update annotaion',
+        content: <Prompt type={defaultType} text={defaultText} onChange={promptChange} />,
+        buttons: {
+          left: ['cancel'],
+          right: [{
+            text: 'Save',
+            key: '⌘+s',
+            className: 'success',
+            action: function () {
+              callback(promptType, promptText);
+              Popup.close();
+            }
+          }]
+        }
+      });
+    });
+
+    let updateAnnotation = (type, text) => {
+      this.props.annotations[ind].type = type;
+      this.props.annotations[ind].text = text;
+    };
+
+    let defaultType = this.props.annotations[ind].type;
+    let defaultText = this.props.annotations[ind].text;
+ 
+    return (e => {
+    /** Call the plugin */
+    Popup.plugins().prompt(defaultType, defaultText, updateAnnotation);
+    })
+  };
+
+
   render() {
     return (
-      <Layer onMouseDown={this.handleStageMouseDown}>
+      <Layer onMouseDown={this.handleStageMouseDown} >
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
-          <Rect
+          <Rect onDblClick={this.prepareHandleClick(ind)}
             x={x1} y={y1} width={x2 - x1} height={y2 - y1} draggable stroke={getColorByIndex(ind)} strokeScaleEnabled={false} name={`rect${ind}`}
           />
         )}
