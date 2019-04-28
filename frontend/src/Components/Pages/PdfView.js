@@ -3,6 +3,7 @@ import {getAllImages} from '../../utils';
 import Canvas from '../Canvas';
 import Popup from 'react-popup';
 import Prompt from '../Prompt';
+import { MessageService } from '../../Services/MessageService.js'
 
 class PdfView extends Component {
   state = {
@@ -43,7 +44,7 @@ class PdfView extends Component {
 
     /** Call the plugin */
     Popup.plugins().prompt('', 'Type your name', function (value) {
-      Popup.alert('You typed: ' + value);
+      MessageService.showSuccess('You typed: ' + value);
     });
   }
 
