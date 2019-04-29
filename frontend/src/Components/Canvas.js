@@ -44,7 +44,11 @@ class MyCanvas extends Component {
         <Image image={this.props.image}
         />
       </Layer>
-      <DrawingCanvas annotations={this.props.annotations} onAnnotationMove={this.props.onAnnotationMove}/>
+      <DrawingCanvas
+          annotations={this.props.annotations}
+          onAnnotationMove={this.props.onAnnotationMove}
+          onAnnotationTransform={this.props.onAnnotationTransform}
+      />
     </Stage>;
   }
 }
@@ -54,14 +58,15 @@ MyCanvas.propTypes = {
   props: PropTypes.any
 };
 
-const moveAnnotation = (target, index, annotations) => {
-  const {x, y, width, height} = target.attrs;
+const transformAnnotation = (target, index, annotations) => {
+  const {x, y, width, height, scaleX, scaleY} = target.attrs;
+  let offetX = width * scaleX, offsetY = height * scaleY;
   annotations[index] = {
     ...annotations[index],
-    x1: x,
-    x2: x + width,
-    y1: y,
-    y2: y + height
+    x1: Math.min(x, x + offetX),
+    x2: Math.max(x, x + offetX),
+    y1: Math.min(y, y + offsetY),
+    y2: Math.max(y, y + offsetY)
   };
   return annotations;
 };
@@ -77,7 +82,9 @@ const WithMenu = (props) => {
     <MenuProvider id="canvas_menu">
       <MyCanvas image={image} annotations={props.annotations}
                 onAnnotationMove={({currentTarget}, index) => props.onAnnotationsChange(
-                  moveAnnotation(currentTarget, index, props.annotations))}/>
+                  transformAnnotation(currentTarget, index, props.annotations))}
+                onAnnotationTransform={({currentTarget}, index) => props.onAnnotationsChange(
+                  transformAnnotation(currentTarget, index, props.annotations))}/>
     </MenuProvider>
     <MyMenu onNewAdnotationClick={({event}) => {
       props.onAnnotationsChange([
