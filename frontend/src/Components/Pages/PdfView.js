@@ -17,37 +17,40 @@ class PdfView extends Component {
   }
 
   onAnnotationsChange(newAnnotations) {
-    Popup.registerPlugin('prompt', function (callback) {
-      let promptType = null;
-      let promptText = null;
-      let promptChange = function (type, text) {
-        promptType = type;
-        promptText = text;
-      };
+    if(newAnnotations.length > this.state.annotations.length){
+      Popup.registerPlugin('prompt', function (callback) {
+        let promptType = null;
+        let promptText = null;
+        let promptChange = function (type, text) {
+          promptType = type;
+          promptText = text;
+        };
 
-      this.create({
-        title: 'New annotaion',
-        content: <Prompt type="linear_plot" text="" onChange={promptChange} />,
-        buttons: {
-          left: ['cancel'],
-          right: [{
-            text: 'Save',
-            key: '⌘+s',
-            className: 'success',
-            action: function () {
-              callback(promptType, promptText);
-              Popup.close();
-            }
-          }]
-        }
+        this.create({
+          title: 'New annotaion',
+          content: <Prompt type="linear_plot" text="" onChange={promptChange} />,
+          buttons: {
+            left: ['cancel'],
+            right: [{
+              text: 'Save',
+              key: '⌘+s',
+              className: 'success',
+              action: function () {
+                callback(promptType, promptText);
+                Popup.close();
+              }
+            }]
+          }
+        });
       });
-    });
 
-    /** Call the plugin */
-    Popup.plugins().prompt(function (type, text) {
-      newAnnotations[newAnnotations.length - 1].type = type;
-      newAnnotations[newAnnotations.length - 1].text = text;
-    });
+      /** Call the plugin */
+      Popup.plugins().prompt(function (type, text) {
+        newAnnotations[newAnnotations.length - 1].type = type;
+        newAnnotations[newAnnotations.length - 1].text = text;
+      });      
+    }
+
     this.setState({annotations: newAnnotations});
     console.log(newAnnotations);
   }
