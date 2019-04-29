@@ -40,22 +40,17 @@ class TransformerComponent extends React.Component {
   }
 
   checkNode() {
-    // here we need to manually attach or detach Transformer node
     const stage = this.transformer.getStage();
     const {selectedShapeName} = this.props;
 
     const selectedNode = stage.findOne('.' + selectedShapeName);
-    console.log(selectedNode);
-    // do nothing if selected node is already attached
     if (selectedNode === this.transformer.node()) {
       return;
     }
 
     if (selectedNode) {
-      // attach to another node
       this.transformer.attachTo(selectedNode);
     } else {
-      // remove transformer
       this.transformer.detach();
     }
     this.transformer.getLayer().batchDraw();
@@ -94,22 +89,16 @@ class DrawingCanvas extends Component {
 
     // find clicked rect by its name
     const name = e.target.name();
-    // const rect = this.state.rectangles.find(r => r.name === name);
-    // if (rect) {
     this.setState({
       selectedRect: name
     });
-    // } else {
-    //   this.setState({
-    //     selectedShapeName: ''
-    //   });
-    // }
   };
 
   prepareHandleClick(ind) {
     Popup.registerPlugin('prompt', function ( defaultType, defaultText, callback) {
       let promptType = null;
       let promptText = null;
+      
       let promptChange = function (type, text) {
         promptType = type;
         promptText = text;
@@ -138,8 +127,8 @@ class DrawingCanvas extends Component {
       this.props.annotations[ind].text = text;
     };
 
-    let defaultType = this.props.annotations[ind].type;
-    let defaultText = this.props.annotations[ind].text;
+    const defaultType = this.props.annotations[ind].type;
+    const defaultText = this.props.annotations[ind].text;
  
     return (e => {
     /** Call the plugin */

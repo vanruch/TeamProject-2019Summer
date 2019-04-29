@@ -52,7 +52,6 @@ class PdfView extends Component {
     }
 
     this.setState({annotations: newAnnotations});
-    console.log(newAnnotations);
   }
 
   render() {
