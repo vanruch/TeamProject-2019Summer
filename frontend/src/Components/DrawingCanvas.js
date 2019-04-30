@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
 import {Layer, Rect, Transformer} from 'react-konva';
+import Popup from 'react-popup';
+import Prompt from './Prompt';
 
 const getColorByIndex = (ind) => {
   // From https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -70,6 +72,7 @@ class DrawingCanvas extends Component {
     selectedRect: null
   };
 
+
   handleStageMouseDown(e) {
     if (e.target === e.target.getStage()) {
       this.setState({
@@ -77,23 +80,69 @@ class DrawingCanvas extends Component {
       });
       return;
     }
-    const clickedOnTransformer = e.target.getParent().className === 'Transformer';
-
+    // clicked on transformer - do nothing
+    const clickedOnTransformer =
+      e.target.getParent().className === 'Transformer';
     if (clickedOnTransformer) {
       return;
     }
 
+    // find clicked rect by its name
     const name = e.target.name();
     this.setState({
       selectedRect: name
     });
   };
 
+  prepareHandleClick(ind) {
+    Popup.registerPlugin('prompt', function ( defaultType, defaultText, callback) {
+      let promptType = null;
+      let promptText = null;
+      
+      let promptChange = function (type, text) {
+        promptType = type;
+        promptText = text;
+      };
+
+      this.create({
+        title: 'Update annotaion',
+        content: <Prompt type={defaultType} text={defaultText} onChange={promptChange} />,
+        buttons: {
+          left: ['cancel'],
+          right: [{
+            text: 'Save',
+            key: '⌘+s',
+            className: 'success',
+            action: function () {
+              callback(promptType, promptText);
+              Popup.close();
+            }
+          }]
+        }
+      });
+    });
+
+    let updateAnnotation = (type, text) => {
+      this.props.annotations[ind].type = type;
+      this.props.annotations[ind].text = text;
+    };
+
+    const defaultType = this.props.annotations[ind].type;
+    const defaultText = this.props.annotations[ind].text;
+ 
+    return (e => {
+    /** Call the plugin */
+    Popup.plugins().prompt(defaultType, defaultText, updateAnnotation);
+    })
+  };
+
+
   render() {
     return (
+
       <Layer onMouseDown={this.handleStageMouseDown.bind(this)}>
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
-          <Rect
+          <Rect onDblClick={this.prepareHandleClick(ind)}
             x={x1} y={y1} width={x2 - x1} height={y2 - y1} draggable onDragEnd={(args) => this.props.onAnnotationMove(args, ind)} stroke={getColorByIndex(ind)} strokeScaleEnabled={false} name={`rect${ind}`}
           />
         )}

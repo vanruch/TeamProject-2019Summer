@@ -11,8 +11,10 @@
     "react-contexify": "^4.0.2",
     "react-dom": "^16.8.6",
     "react-konva": "^16.8.6",
+    "react-popup": "^0.10.0",
     "react-router-dom": "^5.0.0",
     "react-scripts": "2.1.8",
+    "react-toastify": "^5.1.0",
     "use-image": "^1.0.3",
     "yarn": "^1.15.2"
   },

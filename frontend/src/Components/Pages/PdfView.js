@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import {getAllImages} from '../../utils';
 import Canvas from '../Canvas';
+import Popup from 'react-popup';
+import Prompt from '../Prompt';
+import { MessageService } from '../../Services/MessageService.js'
 
 class PdfView extends Component {
   state = {
@@ -14,6 +17,40 @@ class PdfView extends Component {
   }
 
   onAnnotationsChange(newAnnotations) {
+    if(newAnnotations.length > this.state.annotations.length){
+      Popup.registerPlugin('prompt', function (callback) {
+        let promptType = null;
+        let promptText = null;
+        let promptChange = function (type, text) {
+          promptType = type;
+          promptText = text;
+        };
+
+        this.create({
+          title: 'New annotaion',
+          content: <Prompt type="linear_plot" text="" onChange={promptChange} />,
+          buttons: {
+            left: ['cancel'],
+            right: [{
+              text: 'Save',
+              key: '⌘+s',
+              className: 'success',
+              action: function () {
+                callback(promptType, promptText);
+                Popup.close();
+              }
+            }]
+          }
+        });
+      });
+
+      /** Call the plugin */
+      Popup.plugins().prompt(function (type, text) {
+        newAnnotations[newAnnotations.length - 1].type = type;
+        newAnnotations[newAnnotations.length - 1].text = text;
+      });      
+    }
+
     this.setState({annotations: newAnnotations});
   }
 
