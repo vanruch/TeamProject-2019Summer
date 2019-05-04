@@ -1,31 +1,31 @@
-import { toast } from 'react-toastify';
+import {toast} from 'react-toastify';
 
-export const MessageService = {
-  showSuccess: function(message) {
+export default class MessageService {
+  showSuccess(message) {
     toast.success(message, {
-        autoClose: 3000,
-        position: toast.POSITION.TOP_LEFT
-      });
-  },
+      autoClose: 3000,
+      position: toast.POSITION.TOP_LEFT
+    });
+  }
 
-  showError: function(message) {
+  showError(message) {
     toast.error(message, {
-        autoClose: 3000,
-        position: toast.POSITION.TOP_LEFT
-      });
-  },
+      autoClose: 3000,
+      position: toast.POSITION.TOP_LEFT
+    });
+  }
 
-  showInfo: function(message) {
+  showInfo(message) {
     toast.info(message, {
-        autoClose: 3000,
-        position: toast.POSITION.TOP_LEFT
-      });
-  },
+      autoClose: 3000,
+      position: toast.POSITION.TOP_LEFT
+    });
+  }
 
-  showWarn: function(message) {
+  showWarn(message) {
     toast.warn(message, {
-        autoClose: 3000,
-        position: toast.POSITION.TOP_LEFT
-      });
+      autoClose: 3000,
+      position: toast.POSITION.TOP_LEFT
+    });
   }
 };
