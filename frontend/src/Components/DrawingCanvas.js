@@ -30,6 +30,8 @@ const getColorByIndex = (ind) => {
   return COLORS[ind % COLORS.length];
 };
 
+const initRectSize = 100;
+
 class TransformerComponent extends React.Component {
   componentDidMount() {
     this.checkNode();
@@ -59,6 +61,7 @@ class TransformerComponent extends React.Component {
   render() {
     return (
       <Transformer
+        keepRatio={false}
         ref={node => {
           this.transformer = node;
         }}
@@ -98,7 +101,7 @@ class DrawingCanvas extends Component {
     Popup.registerPlugin('prompt', function ( defaultType, defaultText, callback) {
       let promptType = null;
       let promptText = null;
-      
+
       let promptChange = function (type, text) {
         promptType = type;
         promptText = text;
@@ -129,7 +132,7 @@ class DrawingCanvas extends Component {
 
     const defaultType = this.props.annotations[ind].type;
     const defaultText = this.props.annotations[ind].text;
- 
+
     return (e => {
     /** Call the plugin */
     Popup.plugins().prompt(defaultType, defaultText, updateAnnotation);
@@ -143,7 +146,13 @@ class DrawingCanvas extends Component {
       <Layer onMouseDown={this.handleStageMouseDown.bind(this)}>
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
           <Rect onDblClick={this.prepareHandleClick(ind)}
-            x={x1} y={y1} width={x2 - x1} height={y2 - y1} draggable onDragEnd={(args) => this.props.onAnnotationMove(args, ind)} stroke={getColorByIndex(ind)} strokeScaleEnabled={false} name={`rect${ind}`}
+            x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2-x1) / initRectSize} scaleY={(y2-y1) / initRectSize}
+            draggable
+            onDragEnd={(args) => this.props.onAnnotationMove(args, ind)}
+            onTransformEnd={(args) => this.props.onAnnotationTransform(args, ind)}
+            stroke={getColorByIndex(ind)}
+            strokeScaleEnabled={false}
+            name={`rect${ind}`}
           />
         )}
         <TransformerComponent selectedShapeName={this.state.selectedRect}/>
