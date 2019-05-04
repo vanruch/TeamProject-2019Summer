@@ -8,7 +8,7 @@ import { MessageService } from '../../Services/MessageService.js'
 class PdfView extends Component {
   state = {
     image: null,
-    annotations: []
+    annotations: JSON.parse(localStorage.getItem('annotations')) || []
   };
 
   componentDidMount() {
@@ -48,10 +48,10 @@ class PdfView extends Component {
       Popup.plugins().prompt(function (type, text) {
         newAnnotations[newAnnotations.length - 1].type = type;
         newAnnotations[newAnnotations.length - 1].text = text;
-      });      
+      });
     }
 
-    this.setState({annotations: newAnnotations});
+    this.setState({annotations: newAnnotations}, ()=>localStorage.setItem('annotations', JSON.stringify(this.state.annotations)));
   }
 
   render() {

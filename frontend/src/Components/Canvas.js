@@ -1,7 +1,7 @@
 import useImage from 'use-image';
 import {Image, Layer, Stage} from 'react-konva';
 import {Item, Menu, MenuProvider} from 'react-contexify';
-import React, {Component} from 'react';
+import React, {Component, useState} from 'react';
 import 'react-contexify/dist/ReactContexify.min.css';
 import DrawingCanvas from './DrawingCanvas';
 import * as PropTypes from 'prop-types';
@@ -16,16 +16,16 @@ class MyCanvas extends Component {
     scale: {
       x: 1,
       y: 1
-    },
-    x: 0,
-    y: 0
+    }
   };
 
   dragBound({x, y}) {
-    return {
+    const newBounds = {
       x: Math.min(0, Math.max(x, (-this.props.image.width) * this.state.scale.x + window.innerWidth)),
       y: Math.min(0, Math.max(y, (-this.props.image.height) * this.state.scale.y + window.innerHeight))
     };
+    this.props.onOffsetChange(newBounds);
+    return newBounds;
   }
 
   onZoom({evt, target}) {
@@ -33,6 +33,7 @@ class MyCanvas extends Component {
     const oldScale = this.state.scale.x;
 
     const newScale = Math.max(1, evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05);
+    this.props.onScaleChange({x: newScale, y: newScale});
     this.setState({scale: {x: newScale, y: newScale}});
   }
 
@@ -72,10 +73,13 @@ const transformAnnotation = (target, index, annotations) => {
 };
 
 const WithMenu = (props) => {
+  const [offset, setOffset] = useState({x: 0, y: 0});
+  const [scale, setScale] = useState({x: 1, y: 1});
   const [image] = useImage(props.image);
   if (!image) {
     return <div>Loading...</div>;
   }
+
   image.height *= window.innerWidth / image.width;
   image.width = window.innerWidth;
   return <div>
@@ -84,15 +88,17 @@ const WithMenu = (props) => {
                 onAnnotationMove={({currentTarget}, index) => props.onAnnotationsChange(
                   transformAnnotation(currentTarget, index, props.annotations))}
                 onAnnotationTransform={({currentTarget}, index) => props.onAnnotationsChange(
-                  transformAnnotation(currentTarget, index, props.annotations))}/>
+                  transformAnnotation(currentTarget, index, props.annotations))}
+                onOffsetChange={setOffset}
+                onScaleChange={setScale}/>
     </MenuProvider>
     <MyMenu onNewAdnotationClick={({event}) => {
       props.onAnnotationsChange([
         ...props.annotations, {
-          x1: event.layerX,
-          x2: event.layerX + 100,
-          y1: event.layerY,
-          y2: event.layerY + 100,
+          x1: (event.layerX - offset.x) / scale.x,
+          x2: (event.layerX - offset.x) / scale.x + 100,
+          y1: (event.layerY - offset.y) / scale.y,
+          y2: (event.layerY - offset.y) / scale.y + 100,
           type: null,
           text: '',
           subRegions: []
