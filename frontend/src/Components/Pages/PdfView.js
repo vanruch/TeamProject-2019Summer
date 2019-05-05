@@ -3,7 +3,6 @@ import {getAllImages} from '../../utils';
 import Canvas from '../Canvas';
 import Popup from 'react-popup';
 import Prompt from '../Prompt';
-import { MessageService } from '../../Services/MessageService.js'
 
 class PdfView extends Component {
   state = {

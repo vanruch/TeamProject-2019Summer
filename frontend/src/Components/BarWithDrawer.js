@@ -7,6 +7,9 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Typography from '@material-ui/core/Typography';
 import * as PropTypes from 'prop-types';
 import AuthenticationPanel from './Authentication/AuthenticationPanel';
+import {Link} from 'react-router-dom';
+import {List, ListItem, ListItemIcon, ListItemText} from '@material-ui/core';
+import {Apps} from '@material-ui/icons';
 
 export default class BarWithDrawer extends Component {
   state = {
@@ -39,7 +42,16 @@ export default class BarWithDrawer extends Component {
           onClick={this.toggleDrawer(false)}
           onKeyDown={this.toggleDrawer(false)}
         >
-          <p>AAA</p>
+          <List>
+            <Link to='/' style={{ textDecoration: 'none' }}>
+              <ListItem>
+                <ListItemIcon style={{ marginBottom: '2px' }}>
+                  <Apps/>
+                </ListItemIcon>
+                <ListItemText primary="All pages" />
+              </ListItem>
+            </Link>
+          </List>
         </div>
       </Drawer>
     </div>;
