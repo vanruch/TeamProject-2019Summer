@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xe
 
-if [ $TRAVIS_BRANCH == 'master' ] ; then
+if [ $TRAVIS_BRANCH == 'master'  ] && [ $TRAVIS_EVENT_TYPE == 'push' ] ; then
   eval "$(ssh-agent -s)"
   ssh-add
   npm run build
