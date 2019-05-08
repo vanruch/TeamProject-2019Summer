@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import Popup from 'react-popup';
 import SelectType from './SelectType';
 
 export default class Prompt extends Component {

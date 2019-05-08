@@ -5,8 +5,9 @@ if [ $TRAVIS_BRANCH == 'master' ] ; then
   eval "$(ssh-agent -s)"
   ssh-add
   npm run build
+  mv build html
   rsync -rq --delete \
-  $TRAVIS_BUILD_DIR git@104.211.24.171:/var/www/html
+  $TRAVIS_BUILD_DIR/html git@104.211.24.171:/var/www
 else
   echo "Not deploying, since this branch isn't master."
 fi

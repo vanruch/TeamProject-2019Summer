@@ -19,7 +19,7 @@ const AuthenticationPanel = (props) => {
     } catch (e) { }
   };
 
-  const logout = ({}) => {
+  const logout = () => {
     try {
       authService.logOut();
       setUsername();
