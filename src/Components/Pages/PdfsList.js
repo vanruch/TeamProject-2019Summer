@@ -1,10 +1,10 @@
-import React, {Component} from 'react';
+import React, {Component, useState, useEffect, useContext} from 'react';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import {withStyles} from '@material-ui/core/styles';
 import {Link} from 'react-router-dom';
-import {getAllImages} from '../../utils';
+import {ServiceContext} from '../../Services/SeviceContext';
 
 const styles = theme => ({
   root: {
@@ -12,6 +12,8 @@ const styles = theme => ({
   },
   paper: {
     cursor: 'pointer',
+    height: '100%',
+    width: '100%',
     '&:hover': {
       height: '101%',
       width: '101%',
@@ -55,25 +57,19 @@ PdfPreview.propTypes = {
   src: PropTypes.any
 };
 
-class PdfsList extends Component {
-  state = {
-    images: []
-  };
+function PdfsList({classes}) {
+  const [publications, setPublications] = useState([]);
+  const {publicationsService} = useContext(ServiceContext);
 
-  componentDidMount() {
-    const images = getAllImages();
-    this.setState({images});
-  }
+  useEffect(() => {
+    publicationsService.getPublicationPreviews(1).then(setPublications);
+  }, []);
 
-  render() {
-    const {classes} = this.props;
-
-    return (
-      <Grid container className={classes.root} spacing={24}>
-        {this.state.images.map((url, ind) => <PdfPreview key={url} ind={ind} classes={classes} src={url}/>)}
-      </Grid>
-    );
-  }
+  return (
+    <Grid container className={classes.root} spacing={24}>
+      {publications.map(({src}, ind) => <PdfPreview key={src} ind={ind} classes={classes} src={src}/>)}
+    </Grid>
+  );
 }
 
 export default withStyles(styles)(PdfsList);

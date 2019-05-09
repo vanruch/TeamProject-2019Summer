@@ -57,8 +57,8 @@ const onDeleteAnnotationClick = (index, setIndex, annotations) => {
 const MyMenu = ({onNewAdnotationClick, index, setIndex, annotations}) =>
   <Menu id='canvas_menu'>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
-    { (index || index == 0) && <Item onClick={() => onEditAnnotationClick(index, annotations) }>Edytuj adnotację</Item> }
-    { (index || index == 0) && <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item> }
+    { (index || index === 0) && <Item onClick={() => onEditAnnotationClick(index, annotations) }>Edytuj adnotację</Item> }
+    { (index || index === 0) && <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item> }
   </Menu>;
 
 class MyCanvas extends Component {
