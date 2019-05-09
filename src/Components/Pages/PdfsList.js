@@ -6,7 +6,7 @@ import {withStyles} from '@material-ui/core/styles';
 import {Link} from 'react-router-dom';
 import InfiniteScroll from 'react-infinite-scroller';
 import {ServiceContext} from '../../Services/SeviceContext';
-import ThreeStripesSpinner from '../Common/ThreeStripesSpinner';
+import ThreeDotsSpinner from '../Common/ThreeDotsSpinner';
 
 const styles = theme => ({
   root: {
@@ -46,9 +46,9 @@ class PdfPreview extends Component {
   onMouseOut = () => this.setState({elevation: 2});
 
   render() {
-    const {classes, src, key, ind} = this.props;
+    const {classes, src, key, publicationId} = this.props;
     return <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={key}>
-      <Link to={`/paper/${ind}`}>
+      <Link to={`/paper/${publicationId}/1`}>
         <Paper className={classes.paper} elevation={this.state.elevation}
                onMouseOver={this.onMouseOver}
                onMouseOut={this.onMouseOut}>
@@ -88,13 +88,12 @@ function PdfsList({classes}) {
         setPagesLoaded(pagesLoaded + 1);
       }}
       hasMore={hasMore}
-      loader={<div className="loader" key={0}>Loading ...</div>}
     >
       <Grid container className={classes.root} spacing={24}>
-        {publications.map(({src}, ind) => <PdfPreview key={src} ind={ind} classes={classes} src={src}/>)}
+        {publications.map(({src, id}, ind) => <PdfPreview key={src} publicationId={id} classes={classes} src={src}/>)}
       </Grid>
       <div className={classes.loading}>
-        <ThreeStripesSpinner/>
+        <ThreeDotsSpinner/>
       </div>
     </InfiniteScroll>
   );

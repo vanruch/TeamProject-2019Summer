@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useEffect, useState} from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -11,51 +11,52 @@ import {Link} from 'react-router-dom';
 import {List, ListItem, ListItemIcon, ListItemText} from '@material-ui/core';
 import {Apps} from '@material-ui/icons';
 
-export default class BarWithDrawer extends Component {
-  state = {
-    openDrawer: false
-  };
+export default function BarWithDrawer({pageTitleLoader}) {
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [pageTitle, setPageTitle] = useState('');
+  const toggleDrawer = (openDrawer) => () => setOpenDrawer(openDrawer);
 
-  toggleDrawer = (openDrawer) => () => {
-    this.setState({
-      openDrawer,
-    });
-  };
+  useEffect(() => {
+    (async () => setPageTitle(await pageTitleLoader()))();
+  }, [pageTitleLoader]);
 
-  render() {
-    return <div>
-      <AppBar position="sticky" color="white" elevation={0}>
-        <Toolbar>
-          <IconButton color="inherit" aria-label="Menu" onClick={this.toggleDrawer(true)}>
-            <MenuIcon/>
-          </IconButton>
-          <Typography variant="h4" align="center" color="inherit" className="title" style={{fontWeight: 300}}>
-            {this.props.pageTitle}
-          </Typography>
-          <AuthenticationPanel/>
-        </Toolbar>
-      </AppBar>
-      <Drawer open={this.state.openDrawer} onClose={this.toggleDrawer(false)}>
-        <div
-          tabIndex={0}
-          role="button"
-          onClick={this.toggleDrawer(false)}
-          onKeyDown={this.toggleDrawer(false)}
-        >
-          <List>
-            <Link to='/' style={{ textDecoration: 'none' }}>
-              <ListItem>
-                <ListItemIcon style={{ marginBottom: '2px' }}>
-                  <Apps/>
-                </ListItemIcon>
-                <ListItemText primary="All pages" />
-              </ListItem>
-            </Link>
-          </List>
-        </div>
-      </Drawer>
-    </div>;
-  }
+  return <div>
+    <AppBar position="sticky" color="white" elevation={0}>
+      <Toolbar>
+        <IconButton color="inherit" aria-label="Menu" onClick={toggleDrawer(true)}>
+          <MenuIcon/>
+        </IconButton>
+        <Typography variant="h4" align="center" color="inherit" className="title" style={{fontWeight: 300}}>
+          {pageTitle}
+        </Typography>
+        {/*<Typography variant="h4" align="center" color="inherit" className="title"*/}
+        {/*            style={{fontWeight: 300}}>*/}
+        {/*  {pageTitle}*/}
+        {/*</Typography>)*/}
+
+        <AuthenticationPanel/>
+      </Toolbar>
+    </AppBar>
+    <Drawer open={openDrawer} onClose={toggleDrawer(false)}>
+      <div
+        tabIndex={0}
+        role="button"
+        onClick={toggleDrawer(false)}
+        onKeyDown={toggleDrawer(false)}
+      >
+        <List>
+          <Link to='/' style={{textDecoration: 'none'}}>
+            <ListItem>
+              <ListItemIcon style={{marginBottom: '2px'}}>
+                <Apps/>
+              </ListItemIcon>
+              <ListItemText primary="All pages"/>
+            </ListItem>
+          </Link>
+        </List>
+      </div>
+    </Drawer>
+  </div>;
 }
 
 BarWithDrawer.propTypes = {

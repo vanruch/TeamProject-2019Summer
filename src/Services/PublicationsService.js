@@ -9,6 +9,32 @@ const headers = {
 const fetchBody = async (...args) => (await fetch(...args)).json();
 
 export default class PublicationsService {
+  async getPage(publicationId, pageNumber) {
+    const publication = await fetchBody(`${apiUrl}/publications/${publicationId}`, {
+      headers
+    });
+    const src = await this.getPagePreview(publicationId, pageNumber);
+    return {...publication, src};
+  }
+
+  async getPublication(publicationId) {
+    const publication = await fetchBody(`${apiUrl}/publications/${publicationId}`, {
+      headers
+    });
+    const {count} = await fetchBody(`${apiUrl}/publications/pages`, {
+      method: 'POST',
+      body: JSON.stringify({
+        pageNumber: 1,
+        pageSize: 1,
+        searchCriteria: {
+          publicationId
+        }
+      }),
+      headers
+    });
+    return {...publication, pageCount: count};
+  }
+
   async getPublicationPreviews(pageNumber) {
     const {list: publications} = await fetchBody(`${apiUrl}/publications`, {
       method: 'POST',
