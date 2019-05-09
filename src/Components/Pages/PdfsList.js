@@ -1,10 +1,11 @@
-import React, {Component} from 'react';
+import React, {Component, useContext, useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import {withStyles} from '@material-ui/core/styles';
 import {Link} from 'react-router-dom';
-import {getAllImages} from '../../utils';
+import InfiniteScroll from 'react-infinite-scroller';
+import {ServiceContext} from '../../Services/SeviceContext';
 
 const styles = theme => ({
   root: {
@@ -12,6 +13,8 @@ const styles = theme => ({
   },
   paper: {
     cursor: 'pointer',
+    height: '100%',
+    width: '100%',
     '&:hover': {
       height: '101%',
       width: '101%',
@@ -55,25 +58,38 @@ PdfPreview.propTypes = {
   src: PropTypes.any
 };
 
-class PdfsList extends Component {
-  state = {
-    images: []
-  };
+function PdfsList({classes}) {
+  const [publications, setPublications] = useState([]);
+  const [pagesLoaded, setPagesLoaded] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const {publicationsService} = useContext(ServiceContext);
 
-  componentDidMount() {
-    const images = getAllImages();
-    this.setState({images});
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      const morePublications = await publicationsService.getPublicationPreviews(pagesLoaded);
+      if (morePublications.length > 0) {
+        setPublications([...publications, ...morePublications]);
+        setHasMore(true);
+      }
+    };
+    fetchData();
+  }, [pagesLoaded]);
 
-  render() {
-    const {classes} = this.props;
-
-    return (
+  return (
+    <InfiniteScroll
+      pageStart={0}
+      loadMore={() => {
+        setHasMore(false);
+        setPagesLoaded(pagesLoaded + 1);
+      }}
+      hasMore={hasMore}
+      loader={<div className="loader" key={0}>Loading ...</div>}
+    >
       <Grid container className={classes.root} spacing={24}>
-        {this.state.images.map((url, ind) => <PdfPreview key={url} ind={ind} classes={classes} src={url}/>)}
+        {publications.map(({src}, ind) => <PdfPreview key={src} ind={ind} classes={classes} src={src}/>)}
       </Grid>
-    );
-  }
+    </InfiniteScroll>
+  );
 }
 
 export default withStyles(styles)(PdfsList);
