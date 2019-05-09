@@ -1,4 +1,6 @@
-const authToken = process.env.TOKEN || 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJJRCIsInByb2ZpbGUiOiJBTk5PVEFUT1IiLCJpcCI6IioiLCJ1c2VyTmFtZSI6IkFubm90YXRpb25zIFRlYW0iLCJleHRlcm5hbFRva2VuIjoiZTk2OThlZWM4YTI0ZjMyN2QxOWIzZTdlZTkwODg3NTg1NjE3MjViZSIsImV4cCI6MTU4ODkzMDk5MywiaXNzIjoibWluaV9wdyIsImlhdCI6MTU1NzMwODU0OSwianRpIjoiMmExZThlMDUtNDdiOC00YzI4LWE1YmEtNjYzM2FmODM5MTkzIn0.Pw8epqRfOPrYHgdIdezT-NSTQmDhJFPQD5ZXiW7HW5E';
+import {fetchBody} from '../utils';
+
+const authToken = process.env.TOKEN || 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJJRCIsInByb2ZpbGUiOiJBTk5PVEFUT1IiLCJpcCI6IioiLCJ1c2VyTmFtZSI6IkNyZWVkIEJyYXR0b24iLCJleHRlcm5hbFRva2VuIjoiM2QxMzgyZTI2NWY5YzZkM2ZlZDc5NjYzNTM3ZDNlZTM3OWI4ZmVjYiIsImV4cCI6MTU4ODkzMDk5MywiaXNzIjoibWluaV9wdyIsImlhdCI6MTU1NzMwODU0OSwianRpIjoiMmExZThlMDUtNDdiOC00YzI4LWE1YmEtNjYzM2FmODM5MTkzIn0.bqNMxuJeC3ecRrnGSdXcKaaotT69T82MCN8oC8WBex0';
 const apiUrl = 'http://104.211.24.171/api/annotations';
 const headers = {
   Accept: "application/json",
@@ -6,15 +8,14 @@ const headers = {
   'X-AUTH-TOKEN': authToken
 };
 
-const fetchBody = async (...args) => (await fetch(...args)).json();
 
 export default class PublicationsService {
   async getPage(publicationId, pageNumber) {
     const publication = await fetchBody(`${apiUrl}/publications/${publicationId}`, {
       headers
     });
-    const src = await this.getPagePreview(publicationId, pageNumber);
-    return {...publication, src};
+    const page = await this.getPageData(publicationId, pageNumber);
+    return {...publication, page};
   }
 
   async getPublication(publicationId) {
@@ -44,11 +45,11 @@ export default class PublicationsService {
       }),
       headers
     });
-    const imagesSrc = await Promise.all(publications.map(({id}) => this.getPagePreview(id, 1)));
-    return publications.map((page, ind) => ({...page, src: imagesSrc[ind]}));
+    const imagesSrc = await Promise.all(publications.map(({id}) => this.getPageData(id, 1)));
+    return publications.map((page, ind) => ({...page, src: imagesSrc[ind].imageUrl}));
   }
 
-  async getPagePreview(publicationId, pageNumber) {
+  async getPageData(publicationId, pageNumber) {
     const {list} = await fetchBody(`${apiUrl}/publications/pages`, {
       method: 'POST',
       body: JSON.stringify({
@@ -61,7 +62,7 @@ export default class PublicationsService {
       headers
     });
     if (list && list.length > 0) {
-      return list[0].imageUrl;
+      return list[0];
     }
     return '';
   }
