@@ -1,22 +1,25 @@
-import React, {Component} from 'react';
-import {getAllImages} from '../../utils';
+import React, {useContext, useEffect, useState} from 'react';
 import Canvas from '../Canvas';
 import Popup from 'react-popup';
 import Prompt from '../Prompt';
+import {ServiceContext} from '../../Services/SeviceContext';
+import ThreeDotsSpinner from '../Common/ThreeDotsSpinner';
 
-class PdfView extends Component {
-  state = {
-    image: null,
-    annotations: JSON.parse(localStorage.getItem('annotations')) || []
-  };
+function PdfView(props) {
+  const [page, setPage] = useState(null);
+  const [annotations, setAnnotations] = useState(JSON.parse(localStorage.getItem('annotations')) || []);
+  const {publicationsService} = useContext(ServiceContext);
 
-  componentDidMount() {
-    const image = getAllImages()[this.props.match.params.id];
-    this.setState({image});
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      const page = await publicationsService.getPage(props.match.params.id, props.match.params.page);
+      setPage(page);
+    };
+    fetchData();
+  }, [props.match.params.id, props.match.params.page]);
 
-  onAnnotationsChange(newAnnotations) {
-    if(newAnnotations.length > this.state.annotations.length){
+  const onAnnotationsChange = (newAnnotations) => {
+    if (newAnnotations.length > annotations.length) {
       Popup.registerPlugin('prompt', function (callback) {
         let promptType = null;
         let promptText = null;
@@ -27,18 +30,19 @@ class PdfView extends Component {
 
         this.create({
           title: 'New annotaion',
-          content: <Prompt type="linear_plot" text="" onChange={promptChange} />,
+          content: <Prompt type="linear_plot" text="" onChange={promptChange}/>,
           buttons: {
             left: ['cancel'],
-            right: [{
-              text: 'Save',
-              key: '⌘+s',
-              className: 'success',
-              action: function () {
-                callback(promptType, promptText);
-                Popup.close();
-              }
-            }]
+            right: [
+              {
+                text: 'Save',
+                key: '⌘+s',
+                className: 'success',
+                action: function () {
+                  callback(promptType, promptText);
+                  Popup.close();
+                }
+              }]
           }
         });
       });
@@ -50,17 +54,15 @@ class PdfView extends Component {
       });
     }
 
-    this.setState({annotations: newAnnotations}, ()=>localStorage.setItem('annotations', JSON.stringify(this.state.annotations)));
-  }
+    setAnnotations(newAnnotations);
+    localStorage.setItem('annotations', JSON.stringify(newAnnotations));
+  };
 
-  render() {
-    return (
-      <div>
-        {this.state.image && <Canvas image={this.state.image} annotations={this.state.annotations}
-                                     onAnnotationsChange={this.onAnnotationsChange.bind(this)}/>}
-      </div>
-    );
-  }
+  return (
+    <div>
+      {page ? <Canvas image={page.src} annotations={annotations} onAnnotationsChange={onAnnotationsChange}/> : <ThreeDotsSpinner/>}
+    </div>
+  );
 }
 
 PdfView.propTypes = {};

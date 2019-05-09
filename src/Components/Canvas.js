@@ -7,6 +7,7 @@ import DrawingCanvas from './DrawingCanvas';
 import * as PropTypes from 'prop-types';
 import Popup from 'react-popup';
 import Prompt from './Prompt';
+import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 
 const onEditAnnotationClick = (index, annotations) => {
   Popup.registerPlugin('prompt', function ( defaultType, defaultText, callback) {
@@ -131,7 +132,7 @@ const WithMenu = (props) => {
   const [selectedAnnotationIndex, setSelectedAnnotationIndex] = useState(null);
   const [image] = useImage(props.image);
   if (!image) {
-    return <div>Loading...</div>;
+    return <ThreeDotsSpinner/>;
   }
 
   const changeAnnotationIndex = (ind) => {
