@@ -6,6 +6,7 @@ import PdfView from './Components/Pages/PdfView';
 import PdfsList from './Components/Pages/PdfsList';
 import {ServiceContext} from './Services/SeviceContext';
 import PageTitleComponent from './Components/PageTitleComponent';
+import {windowsCloseEventHandler} from './utils';
 
 
 function App() {
