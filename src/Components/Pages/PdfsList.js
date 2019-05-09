@@ -6,6 +6,7 @@ import {withStyles} from '@material-ui/core/styles';
 import {Link} from 'react-router-dom';
 import InfiniteScroll from 'react-infinite-scroller';
 import {ServiceContext} from '../../Services/SeviceContext';
+import ThreeStripesSpinner from '../Common/ThreeStripesSpinner';
 
 const styles = theme => ({
   root: {
@@ -28,6 +29,11 @@ const styles = theme => ({
   },
   control: {
     padding: theme.spacing.unit * 2
+  },
+  loading: {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%'
   }
 });
 
@@ -61,7 +67,7 @@ PdfPreview.propTypes = {
 function PdfsList({classes}) {
   const [publications, setPublications] = useState([]);
   const [pagesLoaded, setPagesLoaded] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const {publicationsService} = useContext(ServiceContext);
 
   useEffect(() => {
@@ -77,7 +83,6 @@ function PdfsList({classes}) {
 
   return (
     <InfiniteScroll
-      pageStart={0}
       loadMore={() => {
         setHasMore(false);
         setPagesLoaded(pagesLoaded + 1);
@@ -88,6 +93,9 @@ function PdfsList({classes}) {
       <Grid container className={classes.root} spacing={24}>
         {publications.map(({src}, ind) => <PdfPreview key={src} ind={ind} classes={classes} src={src}/>)}
       </Grid>
+      <div className={classes.loading}>
+        <ThreeStripesSpinner/>
+      </div>
     </InfiniteScroll>
   );
 }
