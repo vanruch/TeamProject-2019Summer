@@ -4,17 +4,25 @@ import Popup from 'react-popup';
 import Prompt from '../Prompt';
 import {ServiceContext} from '../../Services/SeviceContext';
 import ThreeDotsSpinner from '../Common/ThreeDotsSpinner';
+import {Fab} from '@material-ui/core';
+import {Check} from '@material-ui/icons';
+import {windowsCloseEventHandler} from '../../utils';
+import {Prompt as RouterPrompt} from 'react-router-dom';
 
 function PdfView(props) {
   const [page, setPage] = useState(null);
-  const [annotations, setAnnotations] = useState(JSON.parse(localStorage.getItem('annotations')) || []);
-  const {publicationsService} = useContext(ServiceContext);
+  const [annotations, setAnnotations] = useState([]);
+  const [changesDetected, setChangesDetected] = useState(false);
+  const {publicationsService, annotationsService} = useContext(ServiceContext);
 
   useEffect(() => {
     const fetchData = async () => {
-      const page = await publicationsService.getPage(props.match.params.id, props.match.params.page);
-      setPage(page);
+      const fetchedPage = await publicationsService.getPage(props.match.params.id, props.match.params.page);
+      setPage(fetchedPage);
+      const annotations = await annotationsService.getAnnotations(fetchedPage.page.id);
+      setAnnotations(annotations);
     };
+    setChangesDetected(false);
     fetchData();
   }, [props.match.params.id, props.match.params.page]);
 
@@ -49,19 +57,43 @@ function PdfView(props) {
 
       /** Call the plugin */
       Popup.plugins().prompt(function (type, text) {
-        newAnnotations[newAnnotations.length - 1].type = type;
-        newAnnotations[newAnnotations.length - 1].text = text;
+        newAnnotations[newAnnotations.length - 1].data.type = type;
+        newAnnotations[newAnnotations.length - 1].data.text = text;
       });
     }
 
+    if (!changesDetected) {
+      window.addEventListener('beforeunload', windowsCloseEventHandler);
+    }
+
     setAnnotations(newAnnotations);
-    localStorage.setItem('annotations', JSON.stringify(newAnnotations));
+    setChangesDetected(true);
+  };
+
+  props.history.listen(() => {
+    window.removeEventListener('beforeunload', windowsCloseEventHandler);
+  });
+
+  const saveAnnotations = async () => {
+    await annotationsService.saveChanges(annotations, page.page.id);
+    setChangesDetected(false);
+    window.removeEventListener('beforeunload', windowsCloseEventHandler);
   };
 
   return (
-    <div>
-      {page ? <Canvas image={page.src} annotations={annotations} onAnnotationsChange={onAnnotationsChange}/> : <ThreeDotsSpinner/>}
-    </div>
+      <div>
+        <RouterPrompt
+          when={changesDetected}
+          message='You have unsaved changes, are you sure you want to leave?'
+        />
+        {page ?
+          <Canvas image={page.page.imageUrl} annotations={annotations} onAnnotationsChange={onAnnotationsChange}/>
+          : <ThreeDotsSpinner/>}
+        {changesDetected && <Fab className='fab' color='primary' onClick={saveAnnotations}>
+          <Check/>
+        </Fab>}
+      </div>
+
   );
 }
 

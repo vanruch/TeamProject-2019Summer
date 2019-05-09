@@ -10,37 +10,38 @@ import Prompt from './Prompt';
 import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 
 const onEditAnnotationClick = (index, annotations) => {
-  Popup.registerPlugin('prompt', function ( defaultType, defaultText, callback) {
-        let promptType = null;
-        let promptText = null;
+  Popup.registerPlugin('prompt', function (defaultType, defaultText, callback) {
+    let promptType = null;
+    let promptText = null;
 
-        let promptChange = function (type, text) {
-          promptType = type;
-          promptText = text;
-        };
+    let promptChange = function (type, text) {
+      promptType = type;
+      promptText = text;
+    };
 
-        this.create({
-          title: 'Update annotaion',
-          content: <Prompt type={defaultType} text={defaultText} onChange={promptChange} />,
-          buttons: {
-            left: ['cancel'],
-            right: [{
-              text: 'Save',
-              key: '⌘+s',
-              className: 'success',
-              action: function () {
-                callback(promptType, promptText);
-                Popup.close();
-              }
-            }]
-          }
-        });
-      });
+    this.create({
+      title: 'Update annotaion',
+      content: <Prompt type={defaultType} text={defaultText} onChange={promptChange}/>,
+      buttons: {
+        left: ['cancel'],
+        right: [
+          {
+            text: 'Save',
+            key: '⌘+s',
+            className: 'success',
+            action: function () {
+              callback(promptType, promptText);
+              Popup.close();
+            }
+          }]
+      }
+    });
+  });
 
   let updateAnnotation = (type, text) => {
-      annotations[index].type = type;
-      annotations[index].text = text;
-    };
+    annotations[index].type = type;
+    annotations[index].text = text;
+  };
 
   const defaultType = annotations[index].type;
   const defaultText = annotations[index].text;
@@ -49,17 +50,16 @@ const onEditAnnotationClick = (index, annotations) => {
 };
 
 const onDeleteAnnotationClick = (index, setIndex, annotations) => {
-  annotations.splice(index,1);
+  annotations.splice(index, 1);
   setIndex(null);
 };
-
-
 
 const MyMenu = ({onNewAdnotationClick, index, setIndex, annotations}) =>
   <Menu id='canvas_menu'>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
-    { (index || index === 0) && <Item onClick={() => onEditAnnotationClick(index, annotations) }>Edytuj adnotację</Item> }
-    { (index || index === 0) && <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item> }
+    {(index || index === 0) && <Item onClick={() => onEditAnnotationClick(index, annotations)}>Edytuj adnotację</Item>}
+    {(index || index === 0) &&
+    <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item>}
   </Menu>;
 
 class MyCanvas extends Component {
@@ -98,10 +98,10 @@ class MyCanvas extends Component {
         />
       </Layer>
       <DrawingCanvas
-          changeAnnotationIndex = {this.props.changeAnnotationIndex}
-          annotations={this.props.annotations}
-          onAnnotationMove={this.props.onAnnotationMove}
-          onAnnotationTransform={this.props.onAnnotationTransform}
+        changeAnnotationIndex={this.props.changeAnnotationIndex}
+        annotations={this.props.annotations}
+        onAnnotationMove={this.props.onAnnotationMove}
+        onAnnotationTransform={this.props.onAnnotationTransform}
       />
     </Stage>;
   }
@@ -112,19 +112,18 @@ MyCanvas.propTypes = {
   props: PropTypes.any
 };
 
-const transformAnnotation = (target, index, annotations) => {
+const transformAnnotation = (target, index, annotations, imageAttrs) => {
   const {x, y, width, height, scaleX, scaleY} = target.attrs;
   let offetX = width * scaleX, offsetY = height * scaleY;
-  annotations[index] = {
-    ...annotations[index],
-    x1: Math.min(x, x + offetX),
-    x2: Math.max(x, x + offetX),
-    y1: Math.min(y, y + offsetY),
-    y2: Math.max(y, y + offsetY)
+  annotations[index].data = {
+    ...annotations[index].data,
+    x1: (Math.min(x, x + offetX)) / imageAttrs.width,
+    x2: (Math.max(x, x + offetX)) / imageAttrs.width,
+    y1: (Math.min(y, y + offsetY)) / imageAttrs.height,
+    y2: (Math.max(y, y + offsetY)) / imageAttrs.height
   };
   return annotations;
 };
-
 
 const WithMenu = (props) => {
   const [offset, setOffset] = useState({x: 0, y: 0});
@@ -141,13 +140,21 @@ const WithMenu = (props) => {
 
   image.height *= window.innerWidth / image.width;
   image.width = window.innerWidth;
+
+  const scaleUpAnnotations = () => props.annotations.map(({data: {x1, x2, y1, y2}}) => ({
+    x1: x1 * image.width,
+    x2: x2 * image.width,
+    y1: y1 * image.height,
+    y2: y2 * image.height
+  }));
+
   return <div>
     <MenuProvider id="canvas_menu">
-      <MyCanvas image={image} annotations={props.annotations}
+      <MyCanvas image={image} annotations={scaleUpAnnotations()}
                 onAnnotationMove={({currentTarget}, index) => props.onAnnotationsChange(
-                  transformAnnotation(currentTarget, index, props.annotations))}
+                  transformAnnotation(currentTarget, index, props.annotations, image))}
                 onAnnotationTransform={({currentTarget}, index) => props.onAnnotationsChange(
-                  transformAnnotation(currentTarget, index, props.annotations))}
+                  transformAnnotation(currentTarget, index, props.annotations, image))}
                 onOffsetChange={setOffset}
                 onScaleChange={setScale}
                 changeAnnotationIndex={changeAnnotationIndex}/>
@@ -155,19 +162,21 @@ const WithMenu = (props) => {
     <MyMenu onNewAdnotationClick={({event}) => {
       props.onAnnotationsChange([
         ...props.annotations, {
-          x1: (event.layerX - offset.x) / scale.x,
-          x2: (event.layerX - offset.x) / scale.x + 100,
-          y1: (event.layerY - offset.y) / scale.y,
-          y2: (event.layerY - offset.y) / scale.y + 100,
-          type: null,
-          text: '',
-          subRegions: []
+          data: {
+            x1: ((event.layerX - offset.x) / scale.x) / image.width,
+            x2: ((event.layerX - offset.x) / scale.x + 100) / image.width,
+            y1: ((event.layerY - offset.y) / scale.y) / image.height,
+            y2: ((event.layerY - offset.y) / scale.y + 100) / image.height,
+            type: null,
+            text: '',
+            subRegions: []
+          }
         }
       ]);
     }}
-    index={selectedAnnotationIndex}
-    setIndex={setSelectedAnnotationIndex}
-    annotations = {props.annotations}
+            index={selectedAnnotationIndex}
+            setIndex={setSelectedAnnotationIndex}
+            annotations={props.annotations}
     />
   </div>;
 };

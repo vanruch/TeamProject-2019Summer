@@ -5,3 +5,9 @@
 .title {
   width: 100%;
 }
+
+.fab {
+  position: absolute !important;
+  bottom: 25px;
+  right: 25px;
+}
