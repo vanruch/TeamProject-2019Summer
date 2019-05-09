@@ -23,7 +23,7 @@ export default class PublicationsService {
   }
 
   async getPagePreview(publicationId, pageNumber) {
-    const {list: [{imageUrl}]} = await fetchBody(`${apiUrl}/publications/pages`, {
+    const {list} = await fetchBody(`${apiUrl}/publications/pages`, {
       method: 'POST',
       body: JSON.stringify({
         pageNumber: pageNumber,
@@ -34,6 +34,9 @@ export default class PublicationsService {
       }),
       headers
     });
-    return imageUrl;
+    if (list && list.length > 0) {
+      return list[0].imageUrl;
+    }
+    return '';
   }
 }
