@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
 import {Layer, Rect, Transformer} from 'react-konva';
-import Popup from 'react-popup';
-import Prompt from './Prompt';
 
 const getColorByIndex = (ind) => {
   // From https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -98,45 +96,7 @@ class DrawingCanvas extends Component {
   };
 
   prepareHandleClick(ind) {
-    Popup.registerPlugin('prompt', function ( defaultType, defaultText, callback) {
-      let promptType = null;
-      let promptText = null;
-
-      let promptChange = function (type, text) {
-        promptType = type;
-        promptText = text;
-      };
-
-      this.create({
-        title: 'Update annotaion',
-        content: <Prompt type={defaultType} text={defaultText} onChange={promptChange} />,
-        buttons: {
-          left: ['cancel'],
-          right: [{
-            text: 'Save',
-            key: '⌘+s',
-            className: 'success',
-            action: function () {
-              callback(promptType, promptText);
-              Popup.close();
-            }
-          }]
-        }
-      });
-    });
-
-    let updateAnnotation = (type, text) => {
-      this.props.annotations[ind].type = type;
-      this.props.annotations[ind].text = text;
-    };
-
-    const defaultType = this.props.annotations[ind].type;
-    const defaultText = this.props.annotations[ind].text;
-
-    return (e => {
-    /** Call the plugin */
-    Popup.plugins().prompt(defaultType, defaultText, updateAnnotation);
-    })
+    this.props.changeAnnotationIndex(ind);
   };
 
 
@@ -145,7 +105,7 @@ class DrawingCanvas extends Component {
 
       <Layer onMouseDown={this.handleStageMouseDown.bind(this)}>
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
-          <Rect onDblClick={this.prepareHandleClick(ind)}
+          <Rect onClick={() => this.prepareHandleClick(ind)}
             x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2-x1) / initRectSize} scaleY={(y2-y1) / initRectSize}
             draggable
             onDragEnd={(args) => this.props.onAnnotationMove(args, ind)}

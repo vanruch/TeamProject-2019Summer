@@ -5,10 +5,60 @@ import React, {Component, useState} from 'react';
 import 'react-contexify/dist/ReactContexify.min.css';
 import DrawingCanvas from './DrawingCanvas';
 import * as PropTypes from 'prop-types';
+import Popup from 'react-popup';
+import Prompt from './Prompt';
 
-const MyMenu = ({onNewAdnotationClick}) =>
+const onEditAnnotationClick = (index, annotations) => {
+  Popup.registerPlugin('prompt', function ( defaultType, defaultText, callback) {
+        let promptType = null;
+        let promptText = null;
+
+        let promptChange = function (type, text) {
+          promptType = type;
+          promptText = text;
+        };
+
+        this.create({
+          title: 'Update annotaion',
+          content: <Prompt type={defaultType} text={defaultText} onChange={promptChange} />,
+          buttons: {
+            left: ['cancel'],
+            right: [{
+              text: 'Save',
+              key: '⌘+s',
+              className: 'success',
+              action: function () {
+                callback(promptType, promptText);
+                Popup.close();
+              }
+            }]
+          }
+        });
+      });
+
+  let updateAnnotation = (type, text) => {
+      annotations[index].type = type;
+      annotations[index].text = text;
+    };
+
+  const defaultType = annotations[index].type;
+  const defaultText = annotations[index].text;
+
+  Popup.plugins().prompt(defaultType, defaultText, updateAnnotation);
+};
+
+const onDeleteAnnotationClick = (index, setIndex, annotations) => {
+  annotations.splice(index,1);
+  setIndex(null);
+};
+
+
+
+const MyMenu = ({onNewAdnotationClick, index, setIndex, annotations}) =>
   <Menu id='canvas_menu'>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
+    { (index || index == 0) && <Item onClick={() => onEditAnnotationClick(index, annotations) }>Edytuj adnotację</Item> }
+    { (index || index == 0) && <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item> }
   </Menu>;
 
 class MyCanvas extends Component {
@@ -16,7 +66,8 @@ class MyCanvas extends Component {
     scale: {
       x: 1,
       y: 1
-    }
+    },
+    selectedAnnotationIndex: null
   };
 
   dragBound({x, y}) {
@@ -46,6 +97,7 @@ class MyCanvas extends Component {
         />
       </Layer>
       <DrawingCanvas
+          changeAnnotationIndex = {this.props.changeAnnotationIndex}
           annotations={this.props.annotations}
           onAnnotationMove={this.props.onAnnotationMove}
           onAnnotationTransform={this.props.onAnnotationTransform}
@@ -72,13 +124,19 @@ const transformAnnotation = (target, index, annotations) => {
   return annotations;
 };
 
+
 const WithMenu = (props) => {
   const [offset, setOffset] = useState({x: 0, y: 0});
   const [scale, setScale] = useState({x: 1, y: 1});
+  const [selectedAnnotationIndex, setSelectedAnnotationIndex] = useState(null);
   const [image] = useImage(props.image);
   if (!image) {
     return <div>Loading...</div>;
   }
+
+  const changeAnnotationIndex = (ind) => {
+    setSelectedAnnotationIndex(ind);
+  };
 
   image.height *= window.innerWidth / image.width;
   image.width = window.innerWidth;
@@ -90,7 +148,8 @@ const WithMenu = (props) => {
                 onAnnotationTransform={({currentTarget}, index) => props.onAnnotationsChange(
                   transformAnnotation(currentTarget, index, props.annotations))}
                 onOffsetChange={setOffset}
-                onScaleChange={setScale}/>
+                onScaleChange={setScale}
+                changeAnnotationIndex={changeAnnotationIndex}/>
     </MenuProvider>
     <MyMenu onNewAdnotationClick={({event}) => {
       props.onAnnotationsChange([
@@ -104,7 +163,11 @@ const WithMenu = (props) => {
           subRegions: []
         }
       ]);
-    }}/>
+    }}
+    index={selectedAnnotationIndex}
+    setIndex={setSelectedAnnotationIndex}
+    annotations = {props.annotations}
+    />
   </div>;
 };
 
