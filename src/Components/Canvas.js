@@ -20,7 +20,7 @@ const onEditAnnotationClick = (index, annotations) => {
     };
 
     this.create({
-      title: 'Update annotaion',
+      title: 'Update annotation',
       content: <Prompt type={defaultType} text={defaultText} onChange={promptChange}/>,
       buttons: {
         left: ['cancel'],

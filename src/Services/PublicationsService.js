@@ -37,16 +37,13 @@ export default class PublicationsService {
   }
 
   async getPublicationPreviews(pageNumber) {
-    const {list: publications} = await fetchBody(`${apiUrl}/publications`, {
-      method: 'POST',
-      body: JSON.stringify({
-        pageNumber,
-        pageSize: 8
-      }),
-      headers
+    const res = await fetchBody(`http://3.120.235.67/api/publications/?page=${pageNumber}&page-size=8`, {
+      headers: {
+        'Authorization': 'Token 3d1382e265f9c6d3fed79663537d3ee379b8fecb'
+      }
     });
-    const imagesSrc = await Promise.all(publications.map(({id}) => this.getPageData(id, 1)));
-    return publications.map((page, ind) => ({...page, src: imagesSrc[ind].imageUrl}));
+    const imagesSrc = await Promise.all(res.results.map(({id}) => this.getPageData(id, 1)));
+    return res.results.map((page, ind) => ({...page, src: imagesSrc[ind].imageUrl}));
   }
 
   async getPageData(publicationId, pageNumber) {

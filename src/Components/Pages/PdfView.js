@@ -37,7 +37,7 @@ function PdfView(props) {
         };
 
         this.create({
-          title: 'New annotaion',
+          title: 'New annotation',
           content: <Prompt type="linear_plot" text="" onChange={promptChange}/>,
           buttons: {
             left: ['cancel'],
