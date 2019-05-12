@@ -9,7 +9,7 @@ import Popup from 'react-popup';
 import Prompt from './Prompt';
 import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 
-const onEditAnnotationClick = (index, annotations) => {
+const onEditAnnotationClick = (props) => (index, annotations) => {
   Popup.registerPlugin('prompt', function (defaultType, defaultText, callback) {
     let promptType = null;
     let promptText = null;
@@ -39,22 +39,25 @@ const onEditAnnotationClick = (index, annotations) => {
   });
 
   let updateAnnotation = (type, text) => {
-    annotations[index].type = type;
-    annotations[index].text = text;
+    annotations[index].data.type = type;
+    annotations[index].data.text = text;
   };
 
-  const defaultType = annotations[index].type;
-  const defaultText = annotations[index].text;
+  const defaultType = annotations[index].data.type;
+  const defaultText = annotations[index].data.text;
 
   Popup.plugins().prompt(defaultType, defaultText, updateAnnotation);
+
+  props.onAnnotationsChange(annotations);
 };
 
-const onDeleteAnnotationClick = (index, setIndex, annotations) => {
+const onDeleteAnnotationClick = (props) => (index, setIndex, annotations) => {
   annotations.splice(index, 1);
   setIndex(null);
+  props.onAnnotationsChange(annotations);
 };
 
-const MyMenu = ({onNewAdnotationClick, index, setIndex, annotations}) =>
+const MyMenu = ({onNewAdnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, index, setIndex, annotations}) =>
   <Menu id='canvas_menu'>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
     {(index || index === 0) && <Item onClick={() => onEditAnnotationClick(index, annotations)}>Edytuj adnotację</Item>}
@@ -177,6 +180,8 @@ const WithMenu = (props) => {
             index={selectedAnnotationIndex}
             setIndex={setSelectedAnnotationIndex}
             annotations={props.annotations}
+            onEditAnnotationClick={onEditAnnotationClick(props)}
+            onDeleteAnnotationClick={onDeleteAnnotationClick(props)}
     />
   </div>;
 };
