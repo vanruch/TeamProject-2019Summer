@@ -2,6 +2,8 @@ export const truncateText = (maxLength) => (text) => text.length < maxLength ? t
 
 export const fetchBody = async (...args) => (await fetch(...args)).json();
 
+export const fetchBodyWithStatus = async (...args) => (await fetch(...args));
+
 export const windowsCloseEventHandler = (ev) => {
   ev.preventDefault();
   return ev.returnValue = 'If you will leave the changes will not be saved';

@@ -9,12 +9,17 @@ import UserDataForm from './UserDataForm';
 const AuthenticationPanel = (props) => {
   const [username, setUsername] = useState(props.username);
   const [showPopup, setShowPopup] = useState(false);
-  const {authService} = useContext(ServiceContext);
+  const {authService, messageService} = useContext(ServiceContext);
 
-  const login = ({username, password}) => {
+  const login = async ({username, password}) => {
     try {
-      authService.logIn(username, password);
-      setUsername(username);
+      const logged = await authService.logIn(username, password);
+      if(logged){
+        setUsername(username);
+      }
+      else{
+        messageService.showError("Zły login lub hasło.")
+      }
       setShowPopup(false);
     } catch (e) { }
   };
