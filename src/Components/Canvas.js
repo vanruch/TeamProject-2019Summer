@@ -69,15 +69,41 @@ const MyMenu = ({onNewAdnotationClick, onEditAnnotationClick, onDeleteAnnotation
 
 function MyCanvas(props) {
   const [scale, setScale] = useState({x: 1, y: 1});
+  const [offset, setOffset] = useState({x: 1, y: 1});
   const [showZoomHelper, setShowZoomHelper] = useState(false);
   const {helperService} = useContext(ServiceContext);
 
-  const dragBound = ({x, y}) => {
-    const newBounds = {
-      x: Math.min(0, Math.max(x, (-props.image.width) * scale.x + window.innerWidth)),
-      y: Math.min(0, Math.max(y, (-props.image.height) * scale.y + window.innerHeight))
+  const centerBounds = (bounds) => {
+    const imageWidth = props.image.width * scale.x;
+    const screenWidth = window.innerWidth;
+    if (imageWidth > screenWidth) {
+      return bounds;
+    }
+    return {
+      ...bounds,
+      x: (screenWidth - imageWidth) / 2
     };
-    props.onOffsetChange(newBounds);
+  };
+
+  const centerBoundsLargeScale = (bounds) => {
+    const imageWidth = props.image.width * scale.x;
+    const screenWidth = window.innerWidth;
+    if (imageWidth <= screenWidth) {
+      return bounds;
+    }
+    return {
+      ...bounds,
+      x: (screenWidth - imageWidth) / 2
+    };
+  };
+
+  const dragBound = ({x}) => {
+    const newBounds = centerBounds({
+      x: Math.min(0, Math.max(x, (-props.image.width) * scale.x + window.innerWidth)),
+      y: 0
+    });
+    props.onBoundsChange(newBounds);
+    setOffset(newBounds);
     return newBounds;
   };
 
@@ -93,14 +119,16 @@ function MyCanvas(props) {
     const oldScale = scale.x;
 
     const newScale = Math.max(0.2, evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05);
-    props.onScaleChange({x: newScale, y: newScale});
     setScale({x: newScale, y: newScale});
+    props.onScaleChange(scale);
+    setOffset(centerBoundsLargeScale(centerBounds(offset)));
+    props.onBoundsChange(offset);
   };
 
   return <div>
     <Helper visible={showZoomHelper} text='Trzymaj ⌘ i skroluj by zmienić zoom'/>
-    <Stage width={props.image.width} height={props.image.height} onWheel={onZoom}
-           scale={scale} draggable dragBoundFunc={dragBound}
+    <Stage width={props.image.width} height={props.image.height * scale.x} onWheel={onZoom}
+           scale={scale} draggable dragBoundFunc={dragBound} x={offset.x}
     >
       <Layer>
         <Image image={props.image}/>
@@ -163,7 +191,7 @@ const WithMenu = (props) => {
                   transformAnnotation(currentTarget, index, props.annotations, image))}
                 onAnnotationTransform={({currentTarget}, index) => props.onAnnotationsChange(
                   transformAnnotation(currentTarget, index, props.annotations, image))}
-                onOffsetChange={setOffset}
+                onBoundsChange={setOffset}
                 onScaleChange={setScale}
                 changeAnnotationIndex={changeAnnotationIndex}/>
     </MenuProvider>
