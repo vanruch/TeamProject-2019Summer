@@ -21,7 +21,7 @@ export default function BarWithDrawer({pageTitleLoader}) {
   }, [pageTitleLoader]);
 
   return <div>
-    <AppBar position="fixed" color="white" elevation={0}>
+    <AppBar position="sticky" color="white" elevation={0}>
       <Toolbar>
         <IconButton color="inherit" aria-label="Menu" onClick={toggleDrawer(true)}>
           <MenuIcon/>

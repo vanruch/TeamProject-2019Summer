@@ -1,13 +1,15 @@
 import useImage from 'use-image';
 import {Image, Layer, Stage} from 'react-konva';
 import {Item, Menu, MenuProvider} from 'react-contexify';
-import React, {Component, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import 'react-contexify/dist/ReactContexify.min.css';
 import DrawingCanvas from './DrawingCanvas';
 import * as PropTypes from 'prop-types';
 import Popup from 'react-popup';
 import Prompt from './Prompt';
 import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
+import {ServiceContext} from '../Services/SeviceContext';
+import Helper from './Common/Helper';
 
 const onEditAnnotationClick = (props) => (index, annotations) => {
   Popup.registerPlugin('prompt', function (defaultType, defaultText, callback) {
@@ -65,49 +67,52 @@ const MyMenu = ({onNewAdnotationClick, onEditAnnotationClick, onDeleteAnnotation
     <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item>}
   </Menu>;
 
-class MyCanvas extends Component {
-  state = {
-    scale: {
-      x: 1,
-      y: 1
-    },
-    selectedAnnotationIndex: null
+function MyCanvas(props) {
+  const [scale, setScale] = useState({x: 1, y: 1});
+  const [showZoomHelper, setShowZoomHelper] = useState(false);
+  const {helperService} = useContext(ServiceContext);
+
+  const dragBound = ({x, y}) => {
+    const newBounds = {
+      x: Math.min(0, Math.max(x, (-props.image.width) * scale.x + window.innerWidth)),
+      y: Math.min(0, Math.max(y, (-props.image.height) * scale.y + window.innerHeight))
+    };
+    props.onOffsetChange(newBounds);
+    return newBounds;
   };
 
-  dragBound({x, y}) {
-    const newBounds = {
-      x: Math.min(0, Math.max(x, (-this.props.image.width) * this.state.scale.x + window.innerWidth)),
-      y: Math.min(0, Math.max(y, (-this.props.image.height) * this.state.scale.y + window.innerHeight))
-    };
-    this.props.onOffsetChange(newBounds);
-    return newBounds;
-  }
-
-  onZoom({evt, target}) {
+  const onZoom = ({evt, target}) => {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    if (!(isMac && evt.metaKey) || (!isMac && evt.ctrlKey)) {
+      if (helperService.showZoomHelper()) {
+        setShowZoomHelper(true);
+      }
+      return;
+    }
     evt.preventDefault();
-    const oldScale = this.state.scale.x;
+    const oldScale = scale.x;
 
-    const newScale = Math.max(1, evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05);
-    this.props.onScaleChange({x: newScale, y: newScale});
-    this.setState({scale: {x: newScale, y: newScale}});
-  }
+    const newScale = Math.max(0.2, evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05);
+    props.onScaleChange({x: newScale, y: newScale});
+    setScale({x: newScale, y: newScale});
+  };
 
-  render() {
-    return <Stage width={this.props.image.width} height={this.props.image.height} onWheel={this.onZoom.bind(this)}
-                  scale={this.state.scale} draggable dragBoundFunc={this.dragBound.bind(this)}
+  return <div>
+    <Helper visible={showZoomHelper} text='Trzymaj ⌘ i skroluj by zmienić zoom'/>
+    <Stage width={props.image.width} height={props.image.height} onWheel={onZoom}
+           scale={scale} draggable dragBoundFunc={dragBound}
     >
       <Layer>
-        <Image image={this.props.image}
-        />
+        <Image image={props.image}/>
       </Layer>
       <DrawingCanvas
-        changeAnnotationIndex={this.props.changeAnnotationIndex}
-        annotations={this.props.annotations}
-        onAnnotationMove={this.props.onAnnotationMove}
-        onAnnotationTransform={this.props.onAnnotationTransform}
+        changeAnnotationIndex={props.changeAnnotationIndex}
+        annotations={props.annotations}
+        onAnnotationMove={props.onAnnotationMove}
+        onAnnotationTransform={props.onAnnotationTransform}
       />
-    </Stage>;
-  }
+    </Stage>
+  </div>;
 }
 
 MyCanvas.propTypes = {
