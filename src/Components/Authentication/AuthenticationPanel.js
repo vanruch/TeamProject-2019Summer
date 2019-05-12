@@ -6,21 +6,30 @@ import {ServiceContext} from '../../Services/SeviceContext';
 import './Authentication.css';
 import UserDataForm from './UserDataForm';
 
-const AuthenticationPanel = () => {
-  const {authService} = useContext(ServiceContext);
+const AuthenticationPanel = (props) => {
+  const [username, setUsername] = useState(props.username);
   const [showPopup, setShowPopup] = useState(false);
-  const [username, setUsername] = useState(authService.username);
+  const {authService, messageService} = useContext(ServiceContext);
 
   const login = async ({username, password}) => {
-    await authService.logIn(username, password);
-    setShowPopup(false);
-    setUsername(authService.username);
+    try {
+      const logged = await authService.logIn(username, password);
+      if(logged){
+        setUsername(username);
+      }
+      else{
+        messageService.showError("Zły login lub hasło.")
+      }
+      setShowPopup(false);
+    } catch (e) { }
   };
 
   const logout = () => {
-    authService.logOut();
-    setUsername();
-    setShowPopup(false);
+    try {
+      authService.logOut();
+      setUsername();
+      setShowPopup(false);
+    } catch (e) { }
   };
 
   return <div>

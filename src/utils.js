@@ -9,6 +9,8 @@ export const fetchBody = async (...args) => {
   return body;
 };
 
+export const fetchBodyWithStatus = async (...args) => (await fetch(...args));
+
 export const windowsCloseEventHandler = (ev) => {
   ev.preventDefault();
   return ev.returnValue = 'If you will leave the changes will not be saved';
