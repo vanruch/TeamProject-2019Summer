@@ -21,7 +21,7 @@ export default function BarWithDrawer({pageTitleLoader}) {
   }, [pageTitleLoader]);
 
   return <div>
-    <AppBar position="sticky" color="white" elevation={0}>
+    <AppBar position="fixed" color="white" elevation={0}>
       <Toolbar>
         <IconButton color="inherit" aria-label="Menu" onClick={toggleDrawer(true)}>
           <MenuIcon/>
@@ -29,11 +29,6 @@ export default function BarWithDrawer({pageTitleLoader}) {
         <Typography variant="h4" align="center" color="inherit" className="title" style={{fontWeight: 300}}>
           {pageTitle}
         </Typography>
-        {/*<Typography variant="h4" align="center" color="inherit" className="title"*/}
-        {/*            style={{fontWeight: 300}}>*/}
-        {/*  {pageTitle}*/}
-        {/*</Typography>)*/}
-
         <AuthenticationPanel/>
       </Toolbar>
     </AppBar>
