@@ -6,25 +6,21 @@ import {ServiceContext} from '../../Services/SeviceContext';
 import './Authentication.css';
 import UserDataForm from './UserDataForm';
 
-const AuthenticationPanel = (props) => {
-  const [username, setUsername] = useState(props.username);
-  const [showPopup, setShowPopup] = useState(false);
+const AuthenticationPanel = () => {
   const {authService} = useContext(ServiceContext);
+  const [showPopup, setShowPopup] = useState(false);
+  const [username, setUsername] = useState(authService.username);
 
-  const login = ({username, password}) => {
-    try {
-      authService.logIn(username, password);
-      setUsername(username);
-      setShowPopup(false);
-    } catch (e) { }
+  const login = async ({username, password}) => {
+    await authService.logIn(username, password);
+    setShowPopup(false);
+    setUsername(authService.username);
   };
 
   const logout = () => {
-    try {
-      authService.logOut();
-      setUsername();
-      setShowPopup(false);
-    } catch (e) { }
+    authService.logOut();
+    setUsername();
+    setShowPopup(false);
   };
 
   return <div>

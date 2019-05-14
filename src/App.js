@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import './App.css';
 import BarWithDrawer from './Components/BarWithDrawer';
 import {Route} from 'react-router-dom';
@@ -9,14 +9,16 @@ import PageTitleComponent from './Components/PageTitleComponent';
 
 
 function App() {
-  const {publicationsService} = useContext(ServiceContext);
+  const {publicationsService, authService} = useContext(ServiceContext);
+  const [username, setUsername] = useState(authService.username);
+  authService.setUsernameChangeListener(setUsername);
 
   const routes = [
     {
       path: '/',
       exact: true,
       appbarText: () => () => 'Wybierz Publikację',
-      main: PdfsList
+      main: () => <PdfsList username={username}/>
     },
     {
       path: '/paper/:id/:page',
@@ -24,7 +26,7 @@ function App() {
         const publication = await publicationsService.getPublication(match.params.id);
         return <PageTitleComponent publication={publication} match={match}/>;
       },
-      main: PdfView
+      main: ({match, history}) => <PdfView username={username} match={match} history={history}/>
     }
   ];
 

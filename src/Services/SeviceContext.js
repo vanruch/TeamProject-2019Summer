@@ -7,10 +7,11 @@ import HelperService from './HelperService';
 
 export function setup () {
   const messageService = new MessageService();
+  const authService = new AuthService(messageService);
   return {
-    authService: new AuthService(messageService),
-    publicationsService: new PublicationsService(),
-    annotationsService: new AnnotationsService(),
+    authService,
+    publicationsService: new PublicationsService(authService),
+    annotationsService: new AnnotationsService(authService),
     helperService: new HelperService(),
     messageService
   }
