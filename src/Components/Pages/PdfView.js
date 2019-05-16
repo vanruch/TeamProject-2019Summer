@@ -10,24 +10,25 @@ import {windowsCloseEventHandler} from '../../utils';
 import {Prompt as RouterPrompt} from 'react-router-dom';
 
 function PdfView(props) {
-  const [page, setPage] = useState(null);
+  const [pages, setPages] = useState([]);
   const [annotations, setAnnotations] = useState([]);
   const [changesDetected, setChangesDetected] = useState(false);
   const {publicationsService, annotationsService} = useContext(ServiceContext);
 
   useEffect(() => {
     const fetchData = async () => {
-      const fetchedPage = await publicationsService.getPage(props.match.params.id, props.match.params.page);
-      setPage(fetchedPage);
-      const annotations = await annotationsService.getAnnotations(fetchedPage.page.id);
-      setAnnotations(annotations);
+      const fetchedPages = await publicationsService.getPublicationPages(props.match.params.id);
+      setPages(fetchedPages);
+      const fetchedAnnotations = await annotationsService.getAnnotationsForPublication(props.match.params.id);
+      const annotationsByPage = fetchedPages.map(({id}) => fetchedAnnotations[id] || []);
+      setAnnotations(annotationsByPage);
     };
     setChangesDetected(false);
     fetchData();
-  }, [props.match.params.id, props.match.params.page]);
+  }, [props.match.params.id]);
 
-  const onAnnotationsChange = (newAnnotations) => {
-    if (newAnnotations.length > annotations.length) {
+  const onAnnotationsChange = (i) => (newAnnotations) => {
+    if (newAnnotations.length > annotations[i].length) {
       Popup.registerPlugin('prompt', function (callback) {
         let promptType = null;
         let promptText = null;
@@ -65,8 +66,9 @@ function PdfView(props) {
     if (!changesDetected) {
       window.addEventListener('beforeunload', windowsCloseEventHandler);
     }
-
-    setAnnotations(newAnnotations);
+    const updatedAnnotations = [...annotations];
+    updatedAnnotations[i] = newAnnotations;
+    setAnnotations(updatedAnnotations);
     setChangesDetected(true);
   };
 
@@ -75,7 +77,9 @@ function PdfView(props) {
   });
 
   const saveAnnotations = async () => {
-    await annotationsService.saveChanges(annotations, page.page.id);
+    for (let i = 0; i < pages.length; i++) {
+      await annotationsService.saveChanges(annotations[i], pages[i].id);
+    }
     setChangesDetected(false);
     window.removeEventListener('beforeunload', windowsCloseEventHandler);
   };
@@ -86,9 +90,10 @@ function PdfView(props) {
           when={changesDetected}
           message='You have unsaved changes, are you sure you want to leave?'
         />
-        {page ?
-          <Canvas image={page.page.imageUrl} annotations={annotations} onAnnotationsChange={onAnnotationsChange}/>
-          : <ThreeDotsSpinner/>}
+        {
+          pages.length > 0 && pages.map((page, ind) => <Canvas key={page.id} id={page.id} image={page.imageUrl} annotations={annotations[ind] || []} onAnnotationsChange={onAnnotationsChange(ind)}/>)
+        }
+        {pages.length === 0 && <ThreeDotsSpinner/>}
         {changesDetected && <Fab className='fab' color='primary' onClick={saveAnnotations}>
           <Check/>
         </Fab>}
