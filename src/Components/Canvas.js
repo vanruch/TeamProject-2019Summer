@@ -59,8 +59,8 @@ const onDeleteAnnotationClick = (props) => (index, setIndex, annotations) => {
   props.onAnnotationsChange(annotations);
 };
 
-const MyMenu = ({onNewAdnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, index, setIndex, annotations}) =>
-  <Menu id='canvas_menu'>
+const MyMenu = ({onNewAdnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, index, setIndex, annotations, id}) =>
+  <Menu id={id}>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
     {(index || index === 0) && <Item onClick={() => onEditAnnotationClick(index, annotations)}>Edytuj adnotację</Item>}
     {(index || index === 0) &&
@@ -185,7 +185,7 @@ const WithMenu = (props) => {
   }));
 
   return <div>
-    <MenuProvider id="canvas_menu">
+    <MenuProvider id={`canvas_menu${props.id}`}>
       <MyCanvas image={image} annotations={scaleUpAnnotations()}
                 onAnnotationMove={({currentTarget}, index) => props.onAnnotationsChange(
                   transformAnnotation(currentTarget, index, props.annotations, image))}
@@ -195,7 +195,7 @@ const WithMenu = (props) => {
                 onScaleChange={setScale}
                 changeAnnotationIndex={changeAnnotationIndex}/>
     </MenuProvider>
-    <MyMenu onNewAdnotationClick={({event}) => {
+    <MyMenu id={`canvas_menu${props.id}`} onNewAdnotationClick={({event}) => {
       props.onAnnotationsChange([
         ...props.annotations, {
           data: {

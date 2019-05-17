@@ -73,7 +73,6 @@ class DrawingCanvas extends Component {
     selectedRect: null
   };
 
-
   handleStageMouseDown(e) {
     if (e.target === e.target.getStage()) {
       this.setState({
@@ -99,20 +98,21 @@ class DrawingCanvas extends Component {
     this.props.changeAnnotationIndex(ind);
   };
 
-
   render() {
     return (
 
       <Layer onMouseDown={this.handleStageMouseDown.bind(this)}>
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
           <Rect onClick={() => this.prepareHandleClick(ind)}
-            x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2-x1) / initRectSize} scaleY={(y2-y1) / initRectSize}
-            draggable
-            onDragEnd={(args) => this.props.onAnnotationMove(args, ind)}
-            onTransformEnd={(args) => this.props.onAnnotationTransform(args, ind)}
-            stroke={getColorByIndex(ind)}
-            strokeScaleEnabled={false}
-            name={`rect${ind}`}
+                x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2 - x1) / initRectSize}
+                scaleY={(y2 - y1) / initRectSize}
+                draggable
+                onDragEnd={(args) => this.props.onAnnotationMove(args, ind)}
+                onTransformEnd={(args) => this.props.onAnnotationTransform(args, ind)}
+                stroke={getColorByIndex(ind)}
+                strokeScaleEnabled={false}
+                name={`rect${ind}`}
+                key={ind}
           />
         )}
         <TransformerComponent selectedShapeName={this.state.selectedRect}/>

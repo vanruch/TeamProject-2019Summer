@@ -21,7 +21,7 @@ function App() {
       main: () => <PdfsList username={username}/>
     },
     {
-      path: '/paper/:id/:page',
+      path: '/paper/:id',
       appbarText: ({match}) => async () => {
         const publication = await publicationsService.getPublication(match.params.id);
         return <PageTitleComponent publication={publication} match={match}/>;

@@ -52,8 +52,7 @@ class PdfPreview extends Component {
     const {classes, src, key, publicationId, name} = this.props;
     return <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={key}>
     <div>
-
-      <Link to={`/paper/${publicationId}/1`}>
+      <Link to={`/paper/${publicationId}`}>
         <Paper className={classes.paper} elevation={this.state.elevation}
                onMouseOver={this.onMouseOver}
                onMouseOut={this.onMouseOut}>
