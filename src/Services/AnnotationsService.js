@@ -1,4 +1,5 @@
 import {fetchBody} from '../utils';
+import {groupBy} from '../common';
 
 const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';
 
@@ -9,8 +10,8 @@ export default class AnnotationsService {
 
   get headers() {
     return {
-      Accept: "application/json",
-      "Content-Type": "application/json; charset=utf8",
+      Accept: 'application/json',
+      'Content-Type': 'application/json; charset=utf8',
       'X-AUTH-TOKEN': this.authService.token
     };
   }
@@ -29,6 +30,22 @@ export default class AnnotationsService {
       headers: this.headers
     });
     return list;
+  }
+
+  async getAnnotationsForPublication(publicationId) {
+    await this.authService.ensureLoggedIn();
+    const {list} = await fetchBody(`${apiUrl}/annotations/list`, {
+      method: 'POST',
+      body: JSON.stringify({
+        pageNumber: 1,
+        pageSize: 100,
+        searchCriteria: {
+          publicationId
+        }
+      }),
+      headers: this.headers
+    });
+    return groupBy(x => x.pageId)(list);
   }
 
   async saveChanges(annotations, pageId) {

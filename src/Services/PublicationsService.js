@@ -43,6 +43,22 @@ export default class PublicationsService {
     return {...publication, pageCount: count};
   }
 
+  async getPublicationPages(publicationId) {
+    await this.authService.ensureLoggedIn();
+    const {list} = await fetchBody(`${apiUrl}/publications/pages`, {
+      method: 'POST',
+      body: JSON.stringify({
+        pageNumber: 1,
+        pageSize: 100,
+        searchCriteria: {
+          publicationId
+        }
+      }),
+      headers: this.headers
+    });
+    return list.reverse();
+  }
+
   async getPublicationPreviews(pageNumber) {
     await this.authService.ensureLoggedIn();
     const {list: publications} = await fetchBody(`${apiUrl}/publications`, {
