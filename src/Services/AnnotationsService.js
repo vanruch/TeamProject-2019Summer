@@ -1,4 +1,5 @@
 import {fetchBody} from '../utils';
+import {groupBy} from '../common';
 
 const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';
 
@@ -32,15 +33,6 @@ export default class AnnotationsService {
   }
 
   async getAnnotationsForPublication(publicationId) {
-    const groupBy = (groupFunc) => (list) => list.reduce(
-      (acc, item) => acc[groupFunc(item)] ? {
-        ...acc,
-        [groupFunc(item)]: [...acc[groupFunc(item)], item]
-      } : {
-        ...acc,
-        [groupFunc(item)]: [item]
-      }, {});
-
     await this.authService.ensureLoggedIn();
     const {list} = await fetchBody(`${apiUrl}/annotations/list`, {
       method: 'POST',
