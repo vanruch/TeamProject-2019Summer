@@ -11,7 +11,7 @@ import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 import {ServiceContext} from '../Services/SeviceContext';
 import Helper from './Common/Helper';
 
-const onEditAnnotationClick = (props) => (index, annotations) => {
+const onEditAnnotationClick = (onAnnotationsChange) => (index, annotations) => {
   Popup.registerPlugin('prompt', function (defaultType, defaultText, callback) {
     let promptType = null;
     let promptText = null;
@@ -50,13 +50,13 @@ const onEditAnnotationClick = (props) => (index, annotations) => {
 
   Popup.plugins().prompt(defaultType, defaultText, updateAnnotation);
 
-  props.onAnnotationsChange(annotations);
+  onAnnotationsChange(annotations);
 };
 
-const onDeleteAnnotationClick = (props) => (index, setIndex, annotations) => {
+const onDeleteAnnotationClick = (onAnnotationsChange) => (index, setIndex, annotations) => {
   annotations.splice(index, 1);
   setIndex(null);
-  props.onAnnotationsChange(annotations);
+  onAnnotationsChange(annotations);
 };
 
 const MyMenu = ({onNewAdnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, index, setIndex, annotations, id}) =>
@@ -67,49 +67,30 @@ const MyMenu = ({onNewAdnotationClick, onEditAnnotationClick, onDeleteAnnotation
     <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item>}
   </Menu>;
 
-function MyCanvas(props) {
-  const [scale, setScale] = useState({x: 1, y: 1});
-  const [offset, setOffset] = useState({x: 1, y: 1});
+function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, annotations, onAnnotationMove, onAnnotationTransform}) {
   const [showZoomHelper, setShowZoomHelper] = useState(false);
   const {helperService} = useContext(ServiceContext);
 
-  const centerBounds = (bounds) => {
-    const imageWidth = props.image.width * scale.x;
-    const screenWidth = window.innerWidth;
-    if (imageWidth > screenWidth) {
-      return bounds;
-    }
-    return {
-      ...bounds,
-      x: (screenWidth - imageWidth) / 2
-    };
-  };
-
-  const centerBoundsLargeScale = (bounds) => {
-    const imageWidth = props.image.width * scale.x;
-    const screenWidth = window.innerWidth;
-    if (imageWidth <= screenWidth) {
-      return bounds;
-    }
-    return {
-      ...bounds,
-      x: (screenWidth - imageWidth) / 2
-    };
-  };
-
   const dragBound = ({x}) => {
-    const newBounds = centerBounds({
-      x: Math.min(0, Math.max(x, (-props.image.width) * scale.x + window.innerWidth)),
+    if (scale.x <= 1) {
+      return {x: offset.x, y: 0};
+    }
+    const newBounds = {
+      x: Math.min(0, Math.max(x, (-image.width) * scale.x + window.innerWidth)),
       y: 0
-    });
-    props.onBoundsChange(newBounds);
-    setOffset(newBounds);
+    };
+    onBoundsChange(newBounds);
     return newBounds;
   };
 
-  const onZoom = ({evt, target}) => {
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    if (!(isMac && evt.metaKey) || (!isMac && evt.ctrlKey)) {
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+  const isInZoomMode = (evt) => {
+    return (isMac && evt.metaKey) || (!isMac && evt.altKey);
+  };
+
+  const onZoom = ({evt}) => {
+    if (!isInZoomMode(evt)) {
       if (helperService.showZoomHelper()) {
         setShowZoomHelper(true);
       }
@@ -118,26 +99,30 @@ function MyCanvas(props) {
     evt.preventDefault();
     const oldScale = scale.x;
 
-    const newScale = Math.max(0.2, evt.deltaY < 0 ? oldScale * 1.05 : oldScale / 1.05);
-    setScale({x: newScale, y: newScale});
-    props.onScaleChange(scale);
-    setOffset(centerBoundsLargeScale(centerBounds(offset)));
-    props.onBoundsChange(offset);
+    const newScale = Math.max(0.2, evt.deltaY < 0 ? oldScale * 1.15 : oldScale / 1.15);
+    onScaleChange({x: newScale, y: newScale});
+  };
+
+  const getHelperText = () => {
+    if (isMac) {
+      return 'Trzymaj ⌘ i skroluj by zmienić zoom';
+    }
+    return 'Trzymaj alt i skroluj by zmienić zoom';
   };
 
   return <div>
-    <Helper visible={showZoomHelper} text='Trzymaj ⌘ i skroluj by zmienić zoom'/>
-    <Stage width={props.image.width} height={props.image.height * scale.x} onWheel={onZoom}
-           scale={scale} draggable dragBoundFunc={dragBound} x={offset.x}
+    <Helper visible={showZoomHelper} text={getHelperText()}/>
+    <Stage width={image.width} height={image.height * scale.x} onWheel={onZoom}
+           scale={scale} x={offset.x} draggable dragBoundFunc={dragBound}
     >
       <Layer>
-        <Image image={props.image}/>
+        <Image image={image}/>
       </Layer>
       <DrawingCanvas
-        changeAnnotationIndex={props.changeAnnotationIndex}
-        annotations={props.annotations}
-        onAnnotationMove={props.onAnnotationMove}
-        onAnnotationTransform={props.onAnnotationTransform}
+        changeAnnotationIndex={changeAnnotationIndex}
+        annotations={annotations}
+        onAnnotationMove={onAnnotationMove}
+        onAnnotationTransform={onAnnotationTransform}
       />
     </Stage>
   </div>;
@@ -161,48 +146,58 @@ const transformAnnotation = (target, index, annotations, imageAttrs) => {
   return annotations;
 };
 
-const WithMenu = (props) => {
+const WithMenu = ({annotations, image, scale, id, onScaleChange, onAnnotationsChange}) => {
   const [offset, setOffset] = useState({x: 0, y: 0});
-  const [scale, setScale] = useState({x: 1, y: 1});
   const [selectedAnnotationIndex, setSelectedAnnotationIndex] = useState(null);
-  const [image] = useImage(props.image);
-  if (!image) {
+  const [downloadedImage] = useImage(image);
+  if (!downloadedImage) {
     return <ThreeDotsSpinner/>;
   }
+
+  const centerBounds = (bounds) => {
+    const imageWidth = downloadedImage.width * scale.x;
+    const screenWidth = window.innerWidth;
+    return {
+      ...bounds,
+      x: (screenWidth - imageWidth) / 2
+    };
+  };
 
   const changeAnnotationIndex = (ind) => {
     setSelectedAnnotationIndex(ind);
   };
 
-  image.height *= window.innerWidth / image.width;
-  image.width = window.innerWidth;
+  downloadedImage.height *= window.innerWidth / downloadedImage.width;
+  downloadedImage.width = window.innerWidth;
 
-  const scaleUpAnnotations = () => props.annotations.map(({data: {x1, x2, y1, y2}}) => ({
-    x1: x1 * image.width,
-    x2: x2 * image.width,
-    y1: y1 * image.height,
-    y2: y2 * image.height
+  const scaleUpAnnotations = () => annotations.map(({data: {x1, x2, y1, y2}}) => ({
+    x1: x1 * downloadedImage.width,
+    x2: x2 * downloadedImage.width,
+    y1: y1 * downloadedImage.height,
+    y2: y2 * downloadedImage.height
   }));
 
   return <div>
-    <MenuProvider id={`canvas_menu${props.id}`}>
-      <MyCanvas image={image} annotations={scaleUpAnnotations()}
-                onAnnotationMove={({currentTarget}, index) => props.onAnnotationsChange(
-                  transformAnnotation(currentTarget, index, props.annotations, image))}
-                onAnnotationTransform={({currentTarget}, index) => props.onAnnotationsChange(
-                  transformAnnotation(currentTarget, index, props.annotations, image))}
+    <MenuProvider id={`canvas_menu${id}`}>
+      <MyCanvas image={downloadedImage} annotations={scaleUpAnnotations()}
+                scale={scale} offset={centerBounds(offset)}
+                onAnnotationMove={({currentTarget}, index) => onAnnotationsChange(
+                  transformAnnotation(currentTarget, index, annotations, downloadedImage))}
+                onAnnotationTransform={({currentTarget}, index) => onAnnotationsChange(
+                  transformAnnotation(currentTarget, index, annotations, downloadedImage))}
                 onBoundsChange={setOffset}
-                onScaleChange={setScale}
-                changeAnnotationIndex={changeAnnotationIndex}/>
+                onScaleChange={onScaleChange}
+                changeAnnotationIndex={changeAnnotationIndex}
+      />
     </MenuProvider>
-    <MyMenu id={`canvas_menu${props.id}`} onNewAdnotationClick={({event}) => {
-      props.onAnnotationsChange([
-        ...props.annotations, {
+    <MyMenu id={`canvas_menu${id}`} onNewAdnotationClick={({event}) => {
+      onAnnotationsChange([
+        ...annotations, {
           data: {
-            x1: ((event.layerX - offset.x) / scale.x) / image.width,
-            x2: ((event.layerX - offset.x) / scale.x + 100) / image.width,
-            y1: ((event.layerY - offset.y) / scale.y) / image.height,
-            y2: ((event.layerY - offset.y) / scale.y + 100) / image.height,
+            x1: ((event.layerX - offset.x) / scale.x) / downloadedImage.width,
+            x2: ((event.layerX - offset.x) / scale.x + 100) / downloadedImage.width,
+            y1: ((event.layerY - offset.y) / scale.y) / downloadedImage.height,
+            y2: ((event.layerY - offset.y) / scale.y + 100) / downloadedImage.height,
             type: null,
             text: '',
             subRegions: []
@@ -212,9 +207,9 @@ const WithMenu = (props) => {
     }}
             index={selectedAnnotationIndex}
             setIndex={setSelectedAnnotationIndex}
-            annotations={props.annotations}
-            onEditAnnotationClick={onEditAnnotationClick(props)}
-            onDeleteAnnotationClick={onDeleteAnnotationClick(props)}
+            annotations={annotations}
+            onEditAnnotationClick={onEditAnnotationClick(onAnnotationsChange)}
+            onDeleteAnnotationClick={onDeleteAnnotationClick(onAnnotationsChange)}
     />
   </div>;
 };

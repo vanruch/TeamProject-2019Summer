@@ -13,6 +13,7 @@ function PdfView(props) {
   const [pages, setPages] = useState([]);
   const [annotations, setAnnotations] = useState([]);
   const [changesDetected, setChangesDetected] = useState(false);
+  const [scale, setScale] = useState({x: 1, y: 1});
   const {publicationsService, annotationsService} = useContext(ServiceContext);
 
   useEffect(() => {
@@ -91,7 +92,7 @@ function PdfView(props) {
           message='You have unsaved changes, are you sure you want to leave?'
         />
         {
-          pages.length > 0 && pages.map((page, ind) => <Canvas key={page.id} id={page.id} image={page.imageUrl} annotations={annotations[ind] || []} onAnnotationsChange={onAnnotationsChange(ind)}/>)
+          pages.length > 0 && pages.map((page, ind) => <Canvas key={page.id} id={page.id} image={page.imageUrl} annotations={annotations[ind] || []} onAnnotationsChange={onAnnotationsChange(ind)} scale={scale} onScaleChange={setScale}/>)
         }
         {pages.length === 0 && <ThreeDotsSpinner/>}
         {changesDetected && <Fab className='fab' color='primary' onClick={saveAnnotations}>
