@@ -27,8 +27,8 @@ function PdfView(props) {
     fetchData();
   }, [props.match.params.id]);
 
-  const onAnnotationsChange = (i) => (newAnnotations) => {
-    if (newAnnotations.length > annotations[i].length) {
+  const onAnnotationsChange = (i) => (newAnnotations, copyAnnotation) => {
+    if (newAnnotations.length > annotations[i].length && !copyAnnotation) {
       Popup.registerPlugin('prompt', function (callback) {
         let promptType = null;
         let promptText = null;

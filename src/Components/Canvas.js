@@ -11,6 +11,24 @@ import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 import {ServiceContext} from '../Services/SeviceContext';
 import Helper from './Common/Helper';
 
+const onCopyAnnotationClick = (props) => (index, annotations) => {
+  const copyOffset = 0.025;
+  const copy =  {
+    data: {
+      x1: annotations[index].data.x1 + copyOffset,
+      x2: annotations[index].data.x2 + copyOffset,
+      y1: annotations[index].data.y1 + copyOffset,
+      y2: annotations[index].data.y2 + copyOffset,
+      type: annotations[index].data.type,
+      text: annotations[index].data.text,
+      subRegions: []
+    }
+  };
+  debugger;
+
+  props.onAnnotationsChange([...annotations, copy], true);
+};
+
 const onEditAnnotationClick = (props) => (index, annotations) => {
   Popup.registerPlugin('prompt', function (defaultType, defaultText, callback) {
     let promptType = null;
@@ -59,9 +77,10 @@ const onDeleteAnnotationClick = (props) => (index, setIndex, annotations) => {
   props.onAnnotationsChange(annotations);
 };
 
-const MyMenu = ({onNewAdnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, index, setIndex, annotations, id}) =>
+const MyMenu = ({onNewAdnotationClick, onCopyAnnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, index, setIndex, annotations, id}) =>
   <Menu id={id}>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
+    {(index || index === 0) && <Item onClick={() => onCopyAnnotationClick(index, annotations)}>Kopiuj adnotację</Item>}
     {(index || index === 0) && <Item onClick={() => onEditAnnotationClick(index, annotations)}>Edytuj adnotację</Item>}
     {(index || index === 0) &&
     <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item>}
@@ -213,6 +232,7 @@ const WithMenu = (props) => {
             index={selectedAnnotationIndex}
             setIndex={setSelectedAnnotationIndex}
             annotations={props.annotations}
+            onCopyAnnotationClick={onCopyAnnotationClick(props)}
             onEditAnnotationClick={onEditAnnotationClick(props)}
             onDeleteAnnotationClick={onDeleteAnnotationClick(props)}
     />
