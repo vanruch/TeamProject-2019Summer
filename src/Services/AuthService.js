@@ -1,4 +1,5 @@
 import {fetchBody} from '../utils';
+import {fetchBodyThrowMessage} from '../utils';
 
 const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';
 const headers = {
@@ -6,8 +7,11 @@ const headers = {
   "Content-Type": "application/json; charset=utf8"
 };
 
-const NOT_LOGGED_IN_MESSAGE = 'Nie jesteś zalogowany';
+const NOT_LOGGED_IN_MESSAGE = 'Nie jesteś zalogowany.';
 const BAD_PASSWORD_MESSAGE = 'Zły login lub hasło.';
+const BAD_REGISTRATION_MESSAGE = 'Rejestracja się niepowiodła.';
+const USERNAME_TAKEN_MESSAGE = "Nazwa użytkownika jest zajęta.";
+const BAD_EMAIL_MESSAGE = "Niepoprawny email";
 
 export default class AuthService {
   onUsernameChange = (username) => {};
@@ -32,6 +36,36 @@ export default class AuthService {
     } catch (e) {
       if (/400/.exec(e)) {
         this.messageService.showError(BAD_PASSWORD_MESSAGE);
+      }
+      throw e;
+    }
+  }
+
+  async registration(username, firstName, lastName, email, password){
+    try {
+      await fetchBodyThrowMessage(`${apiUrl}/users/register`, {
+        method: 'POST',
+        body: JSON.stringify({
+          email,
+          firstName,
+          lastName,
+          password,
+          username
+        }),
+        headers
+      });
+
+      await this.logIn(username, password);
+      
+    } catch (e) {
+      if (/A user with that username already exists./.exec(e)) {
+        this.messageService.showError(USERNAME_TAKEN_MESSAGE);
+      }
+      else if(/Enter a valid email address./.exec(e)){
+        this.messageService.showError(BAD_EMAIL_MESSAGE);
+      }
+      else{
+        this.messageService.showError(BAD_REGISTRATION_MESSAGE);
       }
       throw e;
     }
