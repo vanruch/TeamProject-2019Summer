@@ -56,7 +56,7 @@ export default class PublicationsService {
       }),
       headers: this.headers
     });
-    return list.reverse();
+    return list;
   }
 
   async getPublicationPreviews(pageNumber) {
