@@ -24,7 +24,6 @@ const onCopyAnnotationClick = (props) => (index, annotations) => {
       subRegions: []
     }
   };
-  debugger;
 
   props.onAnnotationsChange([...annotations, copy], true);
 };
