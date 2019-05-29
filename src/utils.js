@@ -2,9 +2,30 @@ export const truncateText = (maxLength) => (text) => text.length < maxLength ? t
 
 export const fetchBody = async (...args) => {
   const result = await fetch(...args);
-  const body = await result.json();
+
+  const text = await result.text();
+  if (text.length == 0){
+    return;
+  }
+
+  const body = JSON.parse(text);
   if (result.status !== 200) {
     throw body.errorCode;
+  }
+  return body;
+};
+
+export const fetchBodyThrowMessage = async (...args) => {
+  const result = await fetch(...args);
+
+  const text = await result.text();
+  if (text.length == 0){
+    return;
+  }
+
+  const body = JSON.parse(text);
+  if (result.status !== 200) {
+    throw body.message;
   }
   return body;
 };
