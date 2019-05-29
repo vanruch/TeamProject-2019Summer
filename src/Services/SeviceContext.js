@@ -4,6 +4,7 @@ import MessageService from './MessageService';
 import PublicationsService from './PublicationsService';
 import AnnotationsService from './AnnotationsService';
 import HelperService from './HelperService';
+import AnnotationsControllerService from './AnnotationsControllerService';
 
 export function setup () {
   const messageService = new MessageService();
@@ -13,6 +14,7 @@ export function setup () {
     publicationsService: new PublicationsService(authService),
     annotationsService: new AnnotationsService(authService),
     helperService: new HelperService(),
+    annotationsControllerService: new AnnotationsControllerService(),
     messageService
   }
 }

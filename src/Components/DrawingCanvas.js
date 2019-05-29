@@ -59,6 +59,7 @@ class TransformerComponent extends React.Component {
   render() {
     return (
       <Transformer
+        rotateEnabled={false}
         keepRatio={false}
         ref={node => {
           this.transformer = node;
@@ -73,37 +74,15 @@ class DrawingCanvas extends Component {
     selectedRect: null
   };
 
-  handleStageMouseDown(e) {
-    if (e.target === e.target.getStage()) {
-      this.setState({
-        selectedShapeName: ''
-      });
-      return;
-    }
-    // clicked on transformer - do nothing
-    const clickedOnTransformer =
-      e.target.getParent().className === 'Transformer';
-    if (clickedOnTransformer) {
-      return;
-    }
-
-    // find clicked rect by its name
-    const name = e.target.name();
-    this.setState({
-      selectedRect: name
-    });
-  };
-
-  prepareHandleClick(ind) {
-    this.props.changeAnnotationIndex(ind);
-  };
+  selectedRects() {
+    return this.props.selectedAnnotations ? this.props.selectedAnnotations.map(({annotationIndex}) => `rect${annotationIndex}`) : [];
+  }
 
   render() {
     return (
-
-      <Layer onMouseDown={this.handleStageMouseDown.bind(this)}>
+      <Layer>
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
-          <Rect onClick={() => this.prepareHandleClick(ind)}
+          <Rect onClick={(evt) => this.props.changeAnnotationIndex(ind, evt)}
                 x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2 - x1) / initRectSize}
                 scaleY={(y2 - y1) / initRectSize}
                 draggable
@@ -115,13 +94,10 @@ class DrawingCanvas extends Component {
                 key={ind}
           />
         )}
-        <TransformerComponent selectedShapeName={this.state.selectedRect}/>
+        {this.selectedRects().map((rectName) => <TransformerComponent selectedShapeName={rectName}/>)}
       </Layer>
     );
   }
 }
-
-DrawingCanvas.propTypes = {};
-DrawingCanvas.defaultProps = {};
 
 export default DrawingCanvas;

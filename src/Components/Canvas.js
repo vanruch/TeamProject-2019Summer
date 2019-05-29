@@ -5,87 +5,21 @@ import React, {useContext, useState} from 'react';
 import 'react-contexify/dist/ReactContexify.min.css';
 import DrawingCanvas from './DrawingCanvas';
 import * as PropTypes from 'prop-types';
-import Popup from 'react-popup';
-import Prompt from './Prompt';
 import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 import {ServiceContext} from '../Services/SeviceContext';
 import Helper from './Common/Helper';
 
-const onCopyAnnotationClick = (onAnnotationsChange) => (index, annotations) => {
-  const copyOffset = 0.025;
-  const copy =  {
-    data: {
-      x1: annotations[index].data.x1 + copyOffset,
-      x2: annotations[index].data.x2 + copyOffset,
-      y1: annotations[index].data.y1 + copyOffset,
-      y2: annotations[index].data.y2 + copyOffset,
-      type: annotations[index].data.type,
-      text: annotations[index].data.text,
-      subRegions: []
-    }
-  };
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
-  onAnnotationsChange([...annotations, copy], true);
-};
-
-const onEditAnnotationClick = (onAnnotationsChange) => (index, annotations) => {
-  Popup.registerPlugin('prompt', function (defaultType, defaultText, callback) {
-    let promptType = null;
-    let promptText = null;
-
-    let promptChange = function (type, text) {
-      promptType = type;
-      promptText = text;
-    };
-
-    this.create({
-      title: 'Update annotation',
-      content: <Prompt type={defaultType} text={defaultText} onChange={promptChange}/>,
-      buttons: {
-        left: ['cancel'],
-        right: [
-          {
-            text: 'Save',
-            key: '⌘+s',
-            className: 'success',
-            action: function () {
-              callback(promptType, promptText);
-              Popup.close();
-            }
-          }]
-      }
-    });
-  });
-
-  let updateAnnotation = (type, text) => {
-    annotations[index].data.type = type;
-    annotations[index].data.text = text;
-  };
-
-  const defaultType = annotations[index].data.type;
-  const defaultText = annotations[index].data.text;
-
-  Popup.plugins().prompt(defaultType, defaultText, updateAnnotation);
-
-  onAnnotationsChange(annotations);
-};
-
-const onDeleteAnnotationClick = (onAnnotationsChange) => (index, setIndex, annotations) => {
-  annotations.splice(index, 1);
-  setIndex(null);
-  onAnnotationsChange(annotations);
-};
-
-const MyMenu = ({onNewAdnotationClick, onCopyAnnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, index, setIndex, annotations, id}) =>
+const MyMenu = ({onNewAdnotationClick, onCopyAnnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, selectedAnnotationsCount, id}) =>
   <Menu id={id}>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
-    {(index || index === 0) && <Item onClick={() => onCopyAnnotationClick(index, annotations)}>Kopiuj adnotację</Item>}
-    {(index || index === 0) && <Item onClick={() => onEditAnnotationClick(index, annotations)}>Edytuj adnotację</Item>}
-    {(index || index === 0) &&
-    <Item onClick={() => onDeleteAnnotationClick(index, setIndex, annotations)}>Usuń adnotację</Item>}
+    {(selectedAnnotationsCount > 0) && <Item onClick={onCopyAnnotationClick}>Kopiuj adnotację</Item>}
+    {(selectedAnnotationsCount === 1) && <Item onClick={onEditAnnotationClick}>Edytuj adnotację</Item>}
+    {(selectedAnnotationsCount > 0) && <Item onClick={onDeleteAnnotationClick}>Usuń adnotację</Item>}
   </Menu>;
 
-function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, annotations, onAnnotationMove, onAnnotationTransform}) {
+function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, annotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex}) {
   const [showZoomHelper, setShowZoomHelper] = useState(false);
   const {helperService} = useContext(ServiceContext);
 
@@ -100,8 +34,6 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
     onBoundsChange(newBounds);
     return newBounds;
   };
-
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
   const isInZoomMode = (evt) => {
     return (isMac && evt.metaKey) || (!isMac && evt.altKey);
@@ -141,6 +73,7 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
         annotations={annotations}
         onAnnotationMove={onAnnotationMove}
         onAnnotationTransform={onAnnotationTransform}
+        selectedAnnotations={selectedAnnotationsIndex}
       />
     </Stage>
   </div>;
@@ -151,26 +84,59 @@ MyCanvas.propTypes = {
   props: PropTypes.any
 };
 
-const transformAnnotation = (target, index, annotations, imageAttrs) => {
-  const {x, y, width, height, scaleX, scaleY} = target.attrs;
-  let offetX = width * scaleX, offsetY = height * scaleY;
-  annotations[index].data = {
-    ...annotations[index].data,
-    x1: (Math.min(x, x + offetX)) / imageAttrs.width,
-    x2: (Math.max(x, x + offetX)) / imageAttrs.width,
-    y1: (Math.min(y, y + offsetY)) / imageAttrs.height,
-    y2: (Math.max(y, y + offsetY)) / imageAttrs.height
-  };
-  return annotations;
-};
-
-const WithMenu = ({annotations, image, scale, id, onScaleChange, onAnnotationsChange}) => {
+const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAnnotationsChange}) => {
   const [offset, setOffset] = useState({x: 0, y: 0});
-  const [selectedAnnotationIndex, setSelectedAnnotationIndex] = useState(null);
+  const [selectedAnnotationsIndex, setSelectedAnnotationsIndex] = useState(null);
+  const {annotationsControllerService} = useContext(ServiceContext);
   const [downloadedImage] = useImage(image);
   if (!downloadedImage) {
     return <ThreeDotsSpinner/>;
   }
+
+  const onAddAnnotation = ({event}) => {
+    annotationsControllerService.addAnnotationToPage(pageIndex, {
+      data: {
+        x1: ((event.layerX - offset.x) / scale.x) / downloadedImage.width,
+        x2: ((event.layerX - offset.x) / scale.x + 100) / downloadedImage.width,
+        y1: ((event.layerY - offset.y) / scale.y) / downloadedImage.height,
+        y2: ((event.layerY - offset.y) / scale.y + 100) / downloadedImage.height,
+        type: null,
+        text: '',
+        subRegions: []
+      }
+    });
+    onAnnotationsChange();
+  };
+
+  const onEditAnnotationClick = () => {
+    annotationsControllerService.editSelectedAnnotation();
+    onAnnotationsChange();
+  };
+
+  const onDeleteAnnotationClick = () => {
+    annotationsControllerService.deleteSelectedAnnotations();
+    onAnnotationsChange();
+    setSelectedAnnotationsIndex(null);
+  };
+
+  const onCopyAnnotationClick = () => {
+    const copyOffset = 0.025;
+    annotationsControllerService.copySelectedAnnotations(copyOffset);
+    onAnnotationsChange();
+    setSelectedAnnotationsIndex(null);
+  };
+
+  const transformAnnotation = (target, index) => {
+    const {x, y, width, height, scaleX, scaleY} = target.attrs;
+    let offetX = width * scaleX, offsetY = height * scaleY;
+    annotationsControllerService.transformAnnotation(pageIndex, index, {
+      x1: (Math.min(x, x + offetX)) / downloadedImage.width,
+      x2: (Math.max(x, x + offetX)) / downloadedImage.width,
+      y1: (Math.min(y, y + offsetY)) / downloadedImage.height,
+      y2: (Math.max(y, y + offsetY)) / downloadedImage.height
+    });
+    onAnnotationsChange();
+  };
 
   const centerBounds = (bounds) => {
     const imageWidth = downloadedImage.width * scale.x;
@@ -181,8 +147,13 @@ const WithMenu = ({annotations, image, scale, id, onScaleChange, onAnnotationsCh
     };
   };
 
-  const changeAnnotationIndex = (ind) => {
-    setSelectedAnnotationIndex(ind);
+  const changeAnnotationIndex = (ind, {evt}) => {
+    if ((isMac && evt.metaKey) || (!isMac && evt.ctrlKey)) {
+      annotationsControllerService.toggleAnnotationSelection(pageIndex, ind);
+    } else {
+      annotationsControllerService.selectAnnotation(pageIndex, ind);
+    }
+    setSelectedAnnotationsIndex(annotationsControllerService.selectedAnnotations);
   };
 
   downloadedImage.height *= window.innerWidth / downloadedImage.width;
@@ -199,36 +170,20 @@ const WithMenu = ({annotations, image, scale, id, onScaleChange, onAnnotationsCh
     <MenuProvider id={`canvas_menu${id}`}>
       <MyCanvas image={downloadedImage} annotations={scaleUpAnnotations()}
                 scale={scale} offset={centerBounds(offset)}
-                onAnnotationMove={({currentTarget}, index) => onAnnotationsChange(
-                  transformAnnotation(currentTarget, index, annotations, downloadedImage))}
-                onAnnotationTransform={({currentTarget}, index) => onAnnotationsChange(
-                  transformAnnotation(currentTarget, index, annotations, downloadedImage))}
+                onAnnotationMove={({currentTarget}, index) => transformAnnotation(currentTarget, index)}
+                onAnnotationTransform={({currentTarget}, index) => transformAnnotation(currentTarget, index)}
                 onBoundsChange={setOffset}
                 onScaleChange={onScaleChange}
                 changeAnnotationIndex={changeAnnotationIndex}
+                selectedAnnotationsIndex={selectedAnnotationsIndex}
       />
     </MenuProvider>
-    <MyMenu id={`canvas_menu${id}`} onNewAdnotationClick={({event}) => {
-      onAnnotationsChange([
-        ...annotations, {
-          data: {
-            x1: ((event.layerX - offset.x) / scale.x) / downloadedImage.width,
-            x2: ((event.layerX - offset.x) / scale.x + 100) / downloadedImage.width,
-            y1: ((event.layerY - offset.y) / scale.y) / downloadedImage.height,
-            y2: ((event.layerY - offset.y) / scale.y + 100) / downloadedImage.height,
-            type: null,
-            text: '',
-            subRegions: []
-          }
-        }
-      ]);
-    }}
-            index={selectedAnnotationIndex}
-            setIndex={setSelectedAnnotationIndex}
-            annotations={annotations}
-            onCopyAnnotationClick={onCopyAnnotationClick(onAnnotationsChange)}
-            onEditAnnotationClick={onEditAnnotationClick(onAnnotationsChange)}
-            onDeleteAnnotationClick={onDeleteAnnotationClick(onAnnotationsChange)}
+    <MyMenu id={`canvas_menu${id}`}
+            selectedAnnotationsCount={selectedAnnotationsIndex ? selectedAnnotationsIndex.length : 0}
+            onNewAdnotationClick={onAddAnnotation}
+            onCopyAnnotationClick={onCopyAnnotationClick}
+            onEditAnnotationClick={onEditAnnotationClick}
+            onDeleteAnnotationClick={onDeleteAnnotationClick}
     />
   </div>;
 };

@@ -4,7 +4,7 @@ export const fetchBody = async (...args) => {
   const result = await fetch(...args);
 
   const text = await result.text();
-  if (text.length == 0){
+  if (text.length === 0){
     return;
   }
 
@@ -19,7 +19,7 @@ export const fetchBodyThrowMessage = async (...args) => {
   const result = await fetch(...args);
 
   const text = await result.text();
-  if (text.length == 0){
+  if (text.length === 0){
     return;
   }
 
