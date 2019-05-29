@@ -23,7 +23,7 @@ const styles = theme => ({
     }
   },
   image: {
-    height: '100%',
+    height: '390px',
     width: '100%',
     borderRadius: 5
   },
@@ -34,6 +34,16 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     width: '100%'
+  },
+  title: {
+    padding: theme.spacing.unit * 1,
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden'
+  },
+  link: {
+    textDecoration: 'none',
+    color: '#000'
   }
 });
 
@@ -46,15 +56,20 @@ class PdfPreview extends Component {
   onMouseOut = () => this.setState({elevation: 2});
 
   render() {
-    const {classes, src, key, publicationId} = this.props;
+    const {classes, src, key, publicationId, name} = this.props;
     return <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={key}>
-      <Link to={`/paper/${publicationId}`}>
+    <div>
+      <Link to={`/paper/${publicationId}`} className={classes.link} title={name}>
         <Paper className={classes.paper} elevation={this.state.elevation}
                onMouseOver={this.onMouseOver}
                onMouseOut={this.onMouseOut}>
           <img src={src} className={classes.image} alt="Pdf preview"/>
+          <div className={classes.title}>
+            {name}
+          </div>
         </Paper>
       </Link>
+     </div>
     </Grid>;
   }
 }
@@ -90,7 +105,7 @@ function PdfsList({classes}) {
       hasMore={hasMore}
     >
       <Grid container className={classes.root} spacing={24}>
-        {publications.map(({src, id}, ind) => <PdfPreview key={src} publicationId={id} classes={classes} src={src}/>)}
+        {publications.map(({src, id, name}) => <PdfPreview key={src} publicationId={id} name={name} classes={classes} src={src}/>)}
       </Grid>
       <div className={classes.loading}>
         <ThreeDotsSpinner/>

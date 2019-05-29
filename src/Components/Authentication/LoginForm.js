@@ -8,7 +8,7 @@ const LoginForm = ({onLogin}) => {
 
   return <form noValidate autoComplete='off'>
     <div className="form-field">
-      <TextField label='Name' margin="normal" autoFocus onChange={event => setUsername(event.target.value)}/>
+      <TextField label='User name' margin="normal" autoFocus onChange={event => setUsername(event.target.value)}/>
     </div>
     <div className="form-field">
       <TextField label='Password' type="password" margin="normal" onChange={event => setPassword(event.target.value)}/>
