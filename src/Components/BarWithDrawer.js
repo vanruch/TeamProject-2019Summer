@@ -9,7 +9,7 @@ import * as PropTypes from 'prop-types';
 import AuthenticationPanel from './Authentication/AuthenticationPanel';
 import {Link} from 'react-router-dom';
 import {List, ListItem, ListItemIcon, ListItemText} from '@material-ui/core';
-import {Apps} from '@material-ui/icons';
+import {Apps, Help} from '@material-ui/icons';
 
 export default function BarWithDrawer({pageTitleLoader}) {
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -45,9 +45,17 @@ export default function BarWithDrawer({pageTitleLoader}) {
               <ListItemIcon style={{marginBottom: '2px'}}>
                 <Apps/>
               </ListItemIcon>
-              <ListItemText primary="All pages"/>
+              <ListItemText primary="Główna strona"/>
             </ListItem>
           </Link>
+          <a href='https://docs.google.com/document/d/1DWmx25IrTk-pr7wZl9Rey3qS4z5kFfDldULMfDr7nfA?usp=sharing' style={{textDecoration: 'none'}} target="_blank">
+            <ListItem>
+              <ListItemIcon style={{marginBottom: '2px'}}>
+                <Help/>
+              </ListItemIcon>
+              <ListItemText primary="Pomoc"/>
+            </ListItem>
+          </a>
         </List>
       </div>
     </Drawer>
