@@ -54,11 +54,11 @@ export default class AnnotationsControllerService {
 
     /** Call the plugin */
     Popup.plugins().prompt(function (type, text) {
-      newAnnotation.data.type = type;
+      newAnnotation.data.type = [type];
       newAnnotation.data.text = text;
     });
-
     this.annotations[pageIndex] = [...this.annotations[pageIndex], newAnnotation];
+    this.annotations = [...this.annotations];
   }
 
   deleteSelectedAnnotations() {
@@ -129,5 +129,22 @@ export default class AnnotationsControllerService {
       ...this.annotations[pageIndex][annotationIndex].data,
       ...newDataFields
     };
+    this.annotations = [...this.annotations];
   }
+
+  getSelectedAnnotationsIds() {
+    return this.selectedAnnotations.map(({pageIndex, annotationIndex}) => this.annotations[pageIndex][annotationIndex].id);
+  }
+
+  // connectSelectedAnnotations() {
+  //   this.annotations = this.annotations.map((annotationsOnPage, pageIndex) =>
+  //     annotationsOnPage.map((annotation, annotationIndex) => {
+  //       if (!this.isAnnotationSelected(pageIndex, annotationIndex)) {
+  //         return annotation;
+  //       }
+  //       const currentReferences = annotation.data.references || [];
+  //       return {...annotation, data: {...annotation.data, [...currentReferences, ]}
+  //     }));
+  //   this.selectedAnnotations = [];
+  // }
 }

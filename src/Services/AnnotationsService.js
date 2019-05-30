@@ -51,7 +51,7 @@ export default class AnnotationsService {
   async saveChanges(annotations, pageId) {
     await this.authService.ensureLoggedIn();
     const updatedAnnotations = annotations
-      .map(({data}) => ({annotation: data, pageId}));
+      .map(({data}) => ({annotation: data, pageId, annotationsUsed: []}));
     await fetch(`${apiUrl}/annotations/new`, {
       method: 'POST',
       body: JSON.stringify(updatedAnnotations),
