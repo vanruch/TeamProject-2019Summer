@@ -8,18 +8,21 @@ import * as PropTypes from 'prop-types';
 import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 import {ServiceContext} from '../Services/SeviceContext';
 import Helper from './Common/Helper';
+import {Modal} from '@material-ui/core';
+import AnnotationInfoModal from './AnnotationInfoModal';
 
 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
-const MyMenu = ({onNewAdnotationClick, onCopyAnnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, selectedAnnotationsCount, id}) =>
+const MyMenu = ({onNewAdnotationClick, onConnectAnnotationClick, onCopyAnnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, selectedAnnotationsCount, id}) =>
   <Menu id={id}>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
     {(selectedAnnotationsCount > 0) && <Item onClick={onCopyAnnotationClick}>Kopiuj adnotację</Item>}
     {(selectedAnnotationsCount === 1) && <Item onClick={onEditAnnotationClick}>Edytuj adnotację</Item>}
     {(selectedAnnotationsCount > 0) && <Item onClick={onDeleteAnnotationClick}>Usuń adnotację</Item>}
+    {(selectedAnnotationsCount > 1) && <Item onClick={onConnectAnnotationClick}>Połącz adnotacje</Item>}
   </Menu>;
 
-function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, annotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex}) {
+function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, annotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex, showModal}) {
   const [showZoomHelper, setShowZoomHelper] = useState(false);
   const {helperService} = useContext(ServiceContext);
 
@@ -36,7 +39,7 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
   };
 
   const isInZoomMode = (evt) => {
-    return (isMac && evt.metaKey) || (!isMac && evt.altKey);
+     return (isMac && evt.metaKey) || (!isMac && evt.altKey);
   };
 
   const onZoom = ({evt}) => {
@@ -72,6 +75,7 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
         changeAnnotationIndex={changeAnnotationIndex}
         annotations={annotations}
         onAnnotationMove={onAnnotationMove}
+        showModal={showModal}
         onAnnotationTransform={onAnnotationTransform}
         selectedAnnotations={selectedAnnotationsIndex}
       />
@@ -87,6 +91,7 @@ MyCanvas.propTypes = {
 const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAnnotationsChange}) => {
   const [offset, setOffset] = useState({x: 0, y: 0});
   const [selectedAnnotationsIndex, setSelectedAnnotationsIndex] = useState(null);
+  const [showAnnotationInfoModal, setShowAnnotationInfoModal] = useState(null);
   const {annotationsControllerService} = useContext(ServiceContext);
   const [downloadedImage] = useImage(image);
   if (!downloadedImage) {
@@ -115,6 +120,12 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
 
   const onDeleteAnnotationClick = () => {
     annotationsControllerService.deleteSelectedAnnotations();
+    onAnnotationsChange();
+    setSelectedAnnotationsIndex(null);
+  };
+
+  const onConnectAnnotationClick = () => {
+    annotationsControllerService.connectSelectedAnnotations();
     onAnnotationsChange();
     setSelectedAnnotationsIndex(null);
   };
@@ -167,6 +178,14 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
   }));
 
   return <div>
+    <Modal
+      open={showAnnotationInfoModal !== null}
+      onClose={() => setShowAnnotationInfoModal(null)}
+      aria-labelledby="simple-modal-title"
+      aria-describedby="simple-modal-description"
+    >
+      <AnnotationInfoModal annotation={showAnnotationInfoModal}/>
+    </Modal>
     <MenuProvider id={`canvas_menu${id}`}>
       <MyCanvas image={downloadedImage} annotations={scaleUpAnnotations()}
                 scale={scale} offset={centerBounds(offset)}
@@ -176,6 +195,7 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
                 onScaleChange={onScaleChange}
                 changeAnnotationIndex={changeAnnotationIndex}
                 selectedAnnotationsIndex={selectedAnnotationsIndex}
+                showModal={(ind) => setShowAnnotationInfoModal(annotations[ind])}
       />
     </MenuProvider>
     <MyMenu id={`canvas_menu${id}`}
@@ -184,6 +204,7 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
             onCopyAnnotationClick={onCopyAnnotationClick}
             onEditAnnotationClick={onEditAnnotationClick}
             onDeleteAnnotationClick={onDeleteAnnotationClick}
+            onConnectAnnotationClick={onConnectAnnotationClick}
     />
   </div>;
 };

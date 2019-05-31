@@ -6,8 +6,17 @@ export default class AnnotationsControllerService {
   selectedAnnotations = [];
   annotations = [];
 
+  constructor(messageService) {
+    this.messageService = messageService;
+  }
+
   selectAnnotation(pageIndex, annotationIndex) {
     this.selectedAnnotations = [{pageIndex, annotationIndex}];
+  }
+
+  updateAnnotationsIds(pageIndex, newIds) {
+    this.annotations[pageIndex] = this.annotations[pageIndex].map((annotation, ind) => ({...annotation, id: newIds[ind]}));
+    this.annotations = [...this.annotations];
   }
 
   isAnnotationSelected(pageIndex, annotationIndex) {
@@ -136,15 +145,25 @@ export default class AnnotationsControllerService {
     return this.selectedAnnotations.map(({pageIndex, annotationIndex}) => this.annotations[pageIndex][annotationIndex].id);
   }
 
-  // connectSelectedAnnotations() {
-  //   this.annotations = this.annotations.map((annotationsOnPage, pageIndex) =>
-  //     annotationsOnPage.map((annotation, annotationIndex) => {
-  //       if (!this.isAnnotationSelected(pageIndex, annotationIndex)) {
-  //         return annotation;
-  //       }
-  //       const currentReferences = annotation.data.references || [];
-  //       return {...annotation, data: {...annotation.data, [...currentReferences, ]}
-  //     }));
-  //   this.selectedAnnotations = [];
-  // }
+  connectSelectedAnnotations() {
+    const selectedIds = this.getSelectedAnnotationsIds();
+    if (selectedIds.some((id) => !id)) {
+      this.messageService.showError(
+        'Musisz opublikować bieżące zmiany przed tym jak dodać referencję między adnotacjami');
+      return;
+    }
+    this.annotations = this.annotations.map((annotationsOnPage, pageIndex) =>
+      annotationsOnPage.map((annotation, annotationIndex) => {
+        if (!this.isAnnotationSelected(pageIndex, annotationIndex)) {
+          return annotation;
+        }
+        const currentReferences = annotation.data.text.split(',').filter((text) => text.length > 0) || [];
+        const additionalAnnotations = selectedIds.filter((id) => id !== annotation.id && !currentReferences.includes(id));
+        return {
+          ...annotation,
+          data: {...annotation.data, text: [...currentReferences, ...additionalAnnotations].join(',')}
+        };
+      }));
+    this.selectedAnnotations = [];
+  }
 }

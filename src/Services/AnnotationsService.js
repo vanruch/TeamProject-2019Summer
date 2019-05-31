@@ -4,8 +4,9 @@ import {groupBy} from '../common';
 const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';
 
 export default class AnnotationsService {
-  constructor(authService) {
+  constructor(authService, annotationsControllerService) {
     this.authService = authService;
+    this.annotationsControllerService = annotationsControllerService;
   }
 
   get headers() {
@@ -48,14 +49,18 @@ export default class AnnotationsService {
     return groupBy(x => x.pageId)(list);
   }
 
-  async saveChanges(annotations, pageId) {
+  async saveChanges(annotations, pageId, pageIndex) {
     await this.authService.ensureLoggedIn();
     const updatedAnnotations = annotations
       .map(({data}) => ({annotation: data, pageId, annotationsUsed: []}));
-    await fetch(`${apiUrl}/annotations/new`, {
+    const res = await fetch(`${apiUrl}/annotations/new`, {
       method: 'POST',
       body: JSON.stringify(updatedAnnotations),
       headers: this.headers
     });
+    const newIds = await res.json();
+    if (Array.isArray(newIds)) {
+      this.annotationsControllerService.updateAnnotationsIds(pageIndex, newIds)
+    }
   }
 }
