@@ -9,12 +9,13 @@ import AnnotationsControllerService from './AnnotationsControllerService';
 export function setup () {
   const messageService = new MessageService();
   const authService = new AuthService(messageService);
+  const annotationsControllerService = new AnnotationsControllerService(messageService);
   return {
     authService,
     publicationsService: new PublicationsService(authService),
-    annotationsService: new AnnotationsService(authService),
+    annotationsService: new AnnotationsService(authService, annotationsControllerService),
     helperService: new HelperService(),
-    annotationsControllerService: new AnnotationsControllerService(),
+    annotationsControllerService,
     messageService
   }
 }

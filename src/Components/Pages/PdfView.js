@@ -41,10 +41,11 @@ function PdfView(props) {
 
   const saveAnnotations = async () => {
     for (let i = 0; i < pages.length; i++) {
-      await annotationsService.saveChanges(annotationsControllerService.annotations[i], pages[i].id);
+      await annotationsService.saveChanges(annotationsControllerService.annotations[i], pages[i].id, i);
     }
     setChangesDetected(false);
     window.removeEventListener('beforeunload', windowsCloseEventHandler);
+    setAnnotations(annotationsControllerService.annotations);
   };
 
   return (

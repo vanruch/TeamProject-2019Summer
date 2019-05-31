@@ -11,12 +11,13 @@ import Helper from './Common/Helper';
 
 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
-const MyMenu = ({onNewAdnotationClick, onCopyAnnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, selectedAnnotationsCount, id}) =>
+const MyMenu = ({onNewAdnotationClick, onConnectAnnotationClick, onCopyAnnotationClick, onEditAnnotationClick, onDeleteAnnotationClick, selectedAnnotationsCount, id}) =>
   <Menu id={id}>
     <Item onClick={onNewAdnotationClick}>Dodaj adnotację</Item>
     {(selectedAnnotationsCount > 0) && <Item onClick={onCopyAnnotationClick}>Kopiuj adnotację</Item>}
     {(selectedAnnotationsCount === 1) && <Item onClick={onEditAnnotationClick}>Edytuj adnotację</Item>}
     {(selectedAnnotationsCount > 0) && <Item onClick={onDeleteAnnotationClick}>Usuń adnotację</Item>}
+    {(selectedAnnotationsCount > 1) && <Item onClick={onConnectAnnotationClick}>Połącz adnotacje</Item>}
   </Menu>;
 
 function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, annotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex}) {
@@ -36,7 +37,7 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
   };
 
   const isInZoomMode = (evt) => {
-    return (isMac && evt.metaKey) || (!isMac && evt.altKey);
+     return (isMac && evt.metaKey) || (!isMac && evt.altKey);
   };
 
   const onZoom = ({evt}) => {
@@ -119,6 +120,12 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
     setSelectedAnnotationsIndex(null);
   };
 
+  const onConnectAnnotationClick = () => {
+    annotationsControllerService.connectSelectedAnnotations();
+    onAnnotationsChange();
+    setSelectedAnnotationsIndex(null);
+  };
+
   const onCopyAnnotationClick = () => {
     const copyOffset = 0.025;
     annotationsControllerService.copySelectedAnnotations(copyOffset);
@@ -184,6 +191,7 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
             onCopyAnnotationClick={onCopyAnnotationClick}
             onEditAnnotationClick={onEditAnnotationClick}
             onDeleteAnnotationClick={onDeleteAnnotationClick}
+            onConnectAnnotationClick={onConnectAnnotationClick}
     />
   </div>;
 };
