@@ -44,9 +44,9 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
 
   const onZoom = ({evt}) => {
     if (!isInZoomMode(evt)) {
-      if (helperService.showZoomHelper()) {
-        setShowZoomHelper(true);
-      }
+      // if (helperService.showZoomHelper()) {
+      //   setShowZoomHelper(true);
+      // }
       return;
     }
     evt.preventDefault();
@@ -64,7 +64,7 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
   };
 
   return <div>
-    <Helper visible={showZoomHelper} text={getHelperText()}/>
+    {/*<Helper visible={showZoomHelper} text={getHelperText()}/>*/}
     <Stage width={image.width} height={image.height * scale.x} onWheel={onZoom}
            scale={scale} x={offset.x} draggable dragBoundFunc={dragBound}
     >
@@ -99,12 +99,13 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
   }
 
   const onAddAnnotation = ({event}) => {
+    const centeredOffset = scale.x < 1 ? centerBounds(offset) : offset;
     annotationsControllerService.addAnnotationToPage(pageIndex, {
       data: {
-        x1: ((event.layerX - offset.x) / scale.x) / downloadedImage.width,
-        x2: ((event.layerX - offset.x) / scale.x + 100) / downloadedImage.width,
-        y1: ((event.layerY - offset.y) / scale.y) / downloadedImage.height,
-        y2: ((event.layerY - offset.y) / scale.y + 100) / downloadedImage.height,
+        x1: ((event.layerX - centeredOffset.x) / scale.x ) / downloadedImage.width,
+        x2: ((event.layerX - centeredOffset.x) / scale.x + 100) / downloadedImage.width,
+        y1: ((event.layerY - centeredOffset.y) / scale.y) / downloadedImage.height,
+        y2: ((event.layerY - centeredOffset.y) / scale.y + 100) / downloadedImage.height,
         type: null,
         text: '',
         subRegions: []
