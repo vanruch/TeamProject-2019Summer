@@ -28,9 +28,9 @@ const AnnotationInfoModal = ({annotation, classes}) => (<div style={getModalStyl
   <Typography variant="h3">
     {annotation.id ? `Annotation #${annotation.id}` : 'New annotation'}
   </Typography>
-  <Typography variant="h6">
+  {annotation.data.type && <Typography variant="h6">
     Types: {annotation.data.type.join(', ')}
-  </Typography>
+  </Typography>}
   {annotation.tags && annotation.tags.length && <Typography variant="h6">
     Tags: {annotation.tags.join(', ')}
   </Typography>}
