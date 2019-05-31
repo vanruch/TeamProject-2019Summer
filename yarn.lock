@@ -8470,6 +8470,11 @@ react-scripts@2.1.8:
   optionalDependencies:
     fsevents "1.2.4"
 
+react-tag-autocomplete@^6.0.0-beta.1:
+  version "6.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/react-tag-autocomplete/-/react-tag-autocomplete-6.0.0-beta.1.tgz#4e242f72f8f24f301329ce64fa3981b44209e2e9"
+  integrity sha512-1AnnFwtLukhHhpmsE+aRj6667L6Pxtu9Jj2Ci9h7nW7cwhjRpHVToMz78mpL9oztopCDYAy8mpoW9hD37JYpKg==
+
 react-toastify@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-5.1.0.tgz#aefe1f084bf4733f083423f013d24242cb63c482"

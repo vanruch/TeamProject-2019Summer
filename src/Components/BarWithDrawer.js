@@ -48,7 +48,7 @@ export default function BarWithDrawer({pageTitleLoader}) {
               <ListItemText primary="Główna strona"/>
             </ListItem>
           </Link>
-          <a href='https://docs.google.com/document/d/1DWmx25IrTk-pr7wZl9Rey3qS4z5kFfDldULMfDr7nfA?usp=sharing' style={{textDecoration: 'none'}} target="_blank">
+          <a href='https://docs.google.com/document/d/1DWmx25IrTk-pr7wZl9Rey3qS4z5kFfDldULMfDr7nfA?usp=sharing' style={{textDecoration: 'none'}} target="_blank" rel="noopener noreferrer">
             <ListItem>
               <ListItemIcon style={{marginBottom: '2px'}}>
                 <Help/>

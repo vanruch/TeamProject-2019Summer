@@ -35,7 +35,7 @@ export default class AnnotationsControllerService {
 
       this.create({
         title: 'New annotation',
-        content: <Prompt type="linear_plot" text="" onChange={promptChange}/>,
+        content: <Prompt type={["linear_plot"]} text="" onChange={promptChange}/>,
         buttons: {
           left: ['cancel'],
           right: [
@@ -54,7 +54,7 @@ export default class AnnotationsControllerService {
 
     /** Call the plugin */
     Popup.plugins().prompt(function (type, text) {
-      newAnnotation.data.type = [type];
+      newAnnotation.data.type = type;
       newAnnotation.data.text = text;
     });
     this.annotations[pageIndex] = [...this.annotations[pageIndex], newAnnotation];
