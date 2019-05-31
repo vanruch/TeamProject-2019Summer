@@ -37,7 +37,7 @@ export default class Prompt extends Component {
   render() {
     return <div>
       Type:<SelectType onChange={this.onTypeChange} value={this.state.type}/>
-      Text:<input type="text" className="mm-popup__input" value={this.state.text} onChange={this.onTextChange} />
+      {this.state.type == "chata_reference" && <div>Text:<input type="text" className="mm-popup__input" value={this.state.text} onChange={this.onTextChange} /></div>}
     </div>;
   }
 }
