@@ -51,8 +51,9 @@ export default class Prompt extends Component {
         onDelete={this.onDelete.bind(this)}
         onAddition={this.onAddition.bind(this)}
       />
-      {this.state.type && this.state.type.includes("chata_reference") && <div>Text:
-      <input type="text" className="mm-popup__input" value={this.state.text} onChange={this.onTextChange.bind(this)}/></div>}
+      {this.state.text && <div>
+        ChaTa references: {this.state.text}
+      </div>}
     </div>;
   }
 }

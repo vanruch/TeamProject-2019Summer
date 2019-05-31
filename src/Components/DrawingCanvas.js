@@ -80,22 +80,23 @@ class DrawingCanvas extends Component {
 
   render() {
     return (
-      <Layer>
-        {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
-          <Rect onClick={(evt) => this.props.changeAnnotationIndex(ind, evt)}
-                x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2 - x1) / initRectSize}
-                scaleY={(y2 - y1) / initRectSize}
-                draggable
-                onDragEnd={(args) => this.props.onAnnotationMove(args, ind)}
-                onTransformEnd={(args) => this.props.onAnnotationTransform(args, ind)}
-                stroke={getColorByIndex(ind)}
-                strokeScaleEnabled={false}
-                name={`rect${ind}`}
-                key={ind}
-          />
-        )}
-        {this.selectedRects().map((rectName) => <TransformerComponent selectedShapeName={rectName}/>)}
-      </Layer>
+        <Layer>
+          {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
+            <Rect onClick={(evt) => this.props.changeAnnotationIndex(ind, evt)}
+                  onDblClick={() => this.props.showModal(ind)}
+                  x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2 - x1) / initRectSize}
+                  scaleY={(y2 - y1) / initRectSize}
+                  draggable
+                  onDragEnd={(args) => this.props.onAnnotationMove(args, ind)}
+                  onTransformEnd={(args) => this.props.onAnnotationTransform(args, ind)}
+                  stroke={getColorByIndex(ind)}
+                  strokeScaleEnabled={false}
+                  name={`rect${ind}`}
+                  key={ind}
+            />
+          )}
+          {this.selectedRects().map((rectName) => <TransformerComponent selectedShapeName={rectName}/>)}
+        </Layer>
     );
   }
 }

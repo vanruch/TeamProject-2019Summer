@@ -150,20 +150,20 @@ export default class AnnotationsControllerService {
     if (selectedIds.some((id) => !id)) {
       this.messageService.showError(
         'Musisz opublikować bieżące zmiany przed tym jak dodać referencję między adnotacjami');
+      return;
     }
     this.annotations = this.annotations.map((annotationsOnPage, pageIndex) =>
       annotationsOnPage.map((annotation, annotationIndex) => {
         if (!this.isAnnotationSelected(pageIndex, annotationIndex)) {
           return annotation;
         }
-        const currentReferences = annotation.data.references || [];
+        const currentReferences = annotation.data.text.split(',').filter((text) => text.length > 0) || [];
         const additionalAnnotations = selectedIds.filter((id) => id !== annotation.id && !currentReferences.includes(id));
         return {
           ...annotation,
-          data: {...annotation.data, references: [...currentReferences, ...additionalAnnotations]}
+          data: {...annotation.data, text: [...currentReferences, ...additionalAnnotations].join(',')}
         };
       }));
-    console.log(this.annotations[4])
     this.selectedAnnotations = [];
   }
 }
