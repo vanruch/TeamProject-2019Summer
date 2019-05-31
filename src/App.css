@@ -14,11 +14,7 @@
 
 .mm-popup__box {
   width: 400px !important;
-}
-
-.react-tags__suggestions {
-  z-index: 10000 !important;
-  position: relative !important;
+  overflow: initial !important;
 }
 
 /**
@@ -136,6 +132,7 @@
   top: 100%;
   left: 0;
   width: 100%;
+  z-index: 1001;
 }
 
 @media screen and (min-width: 30em) {
@@ -179,4 +176,8 @@
 .react-tags__suggestions li.is-disabled {
   opacity: 0.5;
   cursor: auto;
+}
+
+.prompt-content > div {
+  margin: 5px 0 12px;
 }

@@ -14,8 +14,14 @@ export const availableTypes = [
   {id: 5, name: "Box plot", value: "box_plot"},
   {id: 6, name: "Table", value: "table"},
   {id: 8, name: "ChaTa reference", value: "chata_reference"},
-  {id: 8, name: "Other plot", value: "other_plot"},
-  {id: 8, name: "Image", value: "image"},
-  {id: 8, name: "Algorithm", value: "algorithm"},
-  {id: 8, name: "Chart", value: "chart"}
+  {id: 9, name: "Other plot", value: "other_plot"},
+  {id: 10, name: "Image", value: "image"},
+  {id: 11, name: "Algorithm", value: "algorithm"},
+  {id: 12, name: "Diagram", value: "diagram"},
+  {id: 13, name: "Plot", value: "plot"},
+  {id: 14, name: "Chart", value: "chart"}
+];
+
+export const availableTags = [
+  {id: 1, name: "To discuss", value: "to_discuss"}
 ];

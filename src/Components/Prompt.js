@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import ReactTags from 'react-tag-autocomplete';
-import {availableTypes} from '../common';
+import {availableTags, availableTypes} from '../common';
 
 export default class Prompt extends Component {
   constructor(props) {
@@ -8,14 +8,15 @@ export default class Prompt extends Component {
 
     this.state = {
       type: this.props.type.map(typeSlug => availableTypes.find(availableType => availableType.value === typeSlug)),
-      text: this.props.text
+      text: this.props.text,
+      tags: this.props.tags
     };
-    this.props.onChange(this.state.type.map(type => type.value), this.state.text);
+    this.props.onChange(this.state.type.map(type => type.value), this.state.text, this.state.tags);
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.type.length !== this.state.type.length || prevState.text !== this.state.text) {
-      this.props.onChange(this.state.type.map(type => type.value), this.state.text);
+    if (prevState.type.length !== this.state.type.length || prevState.text !== this.state.text || prevState.tags.length !== this.state.tags.length) {
+      this.props.onChange(this.state.type.map(type => type.value), this.state.text, this.state.tags);
     }
   }
 
@@ -24,36 +25,64 @@ export default class Prompt extends Component {
     this.setState({text: value});
   }
 
-  onDelete(i) {
+  onDeleteType(i) {
     const types = this.state.type.slice(0);
     types.splice(i, 1);
     this.setState({type: types});
   }
 
-  onAddition(type) {
+  onAddType(type) {
     const types = [].concat(this.state.type, type);
     this.setState({type: types});
   }
 
-  onValidate(tag) {
-    return !this.state.type.find(t => t.value === tag.value);
+  onValidateType(type) {
+    return !this.state.type.find(t => t.value === type.value);
   }
 
   filter({name}, query) {
     return name.toLowerCase().includes(query.toLowerCase());
   }
 
+  onDeleteTag(i) {
+    const tags = this.state.tags.slice(0);
+    tags.splice(i, 1);
+    this.setState({tags: tags});
+  }
+
+  onAddTag(tag) {
+    const tags = [].concat(this.state.tags, tag);
+    this.setState({tags: tags});
+  }
+
+  onValidateTag(tag) {
+    return !this.state.type.find(t => t.value === tag.value);
+  }
+
+
   render() {
-    return <div>
+    return <div className={'prompt-content'}>
       Type:
       <ReactTags
         minQueryLength={1}
         placeholderText={'Add new type'}
         tags={this.state.type}
         suggestions={availableTypes}
-        onValidate={this.onValidate.bind(this)}
-        onDelete={this.onDelete.bind(this)}
-        onAddition={this.onAddition.bind(this)}
+        onValidate={this.onValidateType.bind(this)}
+        onDelete={this.onDeleteType.bind(this)}
+        onAddition={this.onAddType.bind(this)}
+        maxSuggestionsLength={100}
+        suggestionsFilter={this.filter.bind(this)}
+      />
+      Tags:
+      <ReactTags
+        minQueryLength={1}
+        placeholderText={'Add new tag'}
+        tags={this.state.tags}
+        suggestions={availableTags}
+        onValidate={this.onValidateTag.bind(this)}
+        onDelete={this.onDeleteTag.bind(this)}
+        onAddition={this.onAddTag.bind(this)}
         maxSuggestionsLength={100}
         suggestionsFilter={this.filter.bind(this)}
       />

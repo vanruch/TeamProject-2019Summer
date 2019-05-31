@@ -32,9 +32,9 @@ const AnnotationInfoModal = ({annotation, classes}) => (<div style={getModalStyl
     Types: {annotation.data.type.join(', ')}
   </Typography>}
   {annotation.tags && annotation.tags.length && <Typography variant="h6">
-    Tags: {annotation.tags.join(', ')}
+    Tags: {annotation.tags.map(t => t.name).join(', ')}
   </Typography>}
-  {annotation.data.text.length > 0 && <Typography variant="h6">
+  {annotation.data.text && annotation.data.text.length > 0 && <Typography variant="h6">
     Refers to: {annotation.data.text}
   </Typography>}
 </div>);
