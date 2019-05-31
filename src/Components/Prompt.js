@@ -39,6 +39,10 @@ export default class Prompt extends Component {
     return !this.state.type.find(t => t.value === tag.value);
   }
 
+  filter({name}, query) {
+    return name.toLowerCase().includes(query.toLowerCase());
+  }
+
   render() {
     return <div>
       Type:
@@ -50,6 +54,8 @@ export default class Prompt extends Component {
         onValidate={this.onValidate.bind(this)}
         onDelete={this.onDelete.bind(this)}
         onAddition={this.onAddition.bind(this)}
+        maxSuggestionsLength={100}
+        suggestionsFilter={this.filter.bind(this)}
       />
       {this.state.text && <div>
         ChaTa references: {this.state.text}
@@ -57,3 +63,4 @@ export default class Prompt extends Component {
     </div>;
   }
 }
+

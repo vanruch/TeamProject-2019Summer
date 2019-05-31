@@ -16,6 +16,11 @@
   width: 400px !important;
 }
 
+.react-tags__suggestions {
+  z-index: 10000 !important;
+  position: relative !important;
+}
+
 /**
  * <div class="react-tags">
  *   <div class="react-tags__selected">
