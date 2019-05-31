@@ -1,5 +1,5 @@
 import {fetchBody} from '../utils';
-import {groupBy} from '../common';
+import {availableTags, groupBy} from '../common';
 
 const apiUrl = 'http://annotations.mini.pw.edu.pl/api/annotations';
 
@@ -46,13 +46,21 @@ export default class AnnotationsService {
       }),
       headers: this.headers
     });
-    return groupBy(x => x.pageId)(list);
+    const withTags = list.map(annotation => {
+      if (annotation.tags) {
+        annotation.tags = annotation.tags.map(tagValue => availableTags.find(availableTag => availableTag.value === tagValue));
+      } else {
+        annotation.tags = [];
+      }
+      return annotation;
+    });
+    return groupBy(x => x.pageId)(withTags);
   }
 
   async saveChanges(annotations, pageId, pageIndex) {
     await this.authService.ensureLoggedIn();
     const updatedAnnotations = annotations
-      .map(({data}) => ({annotation: data, pageId, annotationsUsed: []}));
+      .map((a) => ({annotation: a.data, pageId, annotationsUsed: [], tags: a.tags.map(t => t.value)}));
     const res = await fetch(`${apiUrl}/annotations/new`, {
       method: 'POST',
       body: JSON.stringify(updatedAnnotations),

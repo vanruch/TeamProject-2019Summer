@@ -35,16 +35,23 @@ export default class AnnotationsControllerService {
 
   addAnnotationToPage(pageIndex, newAnnotation) {
     Popup.registerPlugin('prompt', function (callback) {
-      let promptType = null;
+      let defaultType = ["linear_plot"];
+      newAnnotation.data.type = defaultType;
+      newAnnotation.data.text = null;
+      newAnnotation.tags = [];
+      let promptType = defaultType;
       let promptText = null;
-      let promptChange = function (type, text) {
+      let promptTags = [];
+
+      let promptChange = function (type, text, tags) {
         promptType = type;
         promptText = text;
+        promptTags = tags;
       };
 
       this.create({
         title: 'New annotation',
-        content: <Prompt type={["linear_plot"]} text="" onChange={promptChange}/>,
+        content: <Prompt type={["linear_plot"]} text="" tags={[]} onChange={promptChange}/>,
         buttons: {
           left: ['cancel'],
           right: [
@@ -53,7 +60,7 @@ export default class AnnotationsControllerService {
               key: '⌘+s',
               className: 'success',
               action: function () {
-                callback(promptType, promptText);
+                callback(promptType, promptText, promptTags);
                 Popup.close();
               }
             }]
@@ -62,9 +69,10 @@ export default class AnnotationsControllerService {
     });
 
     /** Call the plugin */
-    Popup.plugins().prompt(function (type, text) {
+    Popup.plugins().prompt(function (type, text, tags) {
       newAnnotation.data.type = type;
       newAnnotation.data.text = text;
+      newAnnotation.tags = tags;
     });
     this.annotations[pageIndex] = [...this.annotations[pageIndex], newAnnotation];
     this.annotations = [...this.annotations];
@@ -81,18 +89,20 @@ export default class AnnotationsControllerService {
       throw new Error('Only one annotation must be selected for edit');
     }
     const [{pageIndex, annotationIndex}] = this.selectedAnnotations;
-    Popup.registerPlugin('prompt', function (defaultType, defaultText, callback) {
+    Popup.registerPlugin('prompt', function (defaultType, defaultText, defaultTags, callback) {
       let promptType = null;
       let promptText = null;
+      let promptTags = [];
 
-      let promptChange = function (type, text) {
+      let promptChange = function (type, text, tags) {
         promptType = type;
         promptText = text;
+        promptTags = tags;
       };
 
       this.create({
         title: 'Zmień adnotację',
-        content: <Prompt type={defaultType} text={defaultText} onChange={promptChange}/>,
+        content: <Prompt type={defaultType} text={defaultText} tags={defaultTags} onChange={promptChange}/>,
         buttons: {
           left: ['cancel'],
           right: [
@@ -101,7 +111,7 @@ export default class AnnotationsControllerService {
               key: '⌘+s',
               className: 'success',
               action: function () {
-                callback(promptType, promptText);
+                callback(promptType, promptText, promptTags);
                 Popup.close();
               }
             }]
@@ -109,13 +119,15 @@ export default class AnnotationsControllerService {
       });
     });
 
-    let updateAnnotation = (type, text) => {
+    let updateAnnotation = (type, text, tags) => {
       this.annotations[pageIndex][annotationIndex].data.type = type;
       this.annotations[pageIndex][annotationIndex].data.text = text;
+      this.annotations[pageIndex][annotationIndex].tags = tags;
     };
     const originalType = this.annotations[pageIndex][annotationIndex].data.type;
     const originalText = this.annotations[pageIndex][annotationIndex].data.text;
-    Popup.plugins().prompt(originalType, originalText, updateAnnotation);
+    const originalTags = this.annotations[pageIndex][annotationIndex].tags;
+    Popup.plugins().prompt(originalType, originalText, originalTags, updateAnnotation);
   }
 
   copySelectedAnnotations(copyOffset) {
