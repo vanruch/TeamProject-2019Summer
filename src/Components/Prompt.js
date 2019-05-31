@@ -1,43 +1,58 @@
 import React, {Component} from 'react';
 import SelectType from './SelectType';
+import ReactTags from "react-tag-autocomplete";
 
 export default class Prompt extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      type: this.props.type,
+      type: this.props.type.map(typeSlug => SelectType().find(availableType => availableType.value === typeSlug)),
       text: this.props.text
     };
-    this.props.onChange(this.state.type, this.state.text);
-    this.onTextChange = (e) => this._onTextChange(e);
-    this.onTypeChange = (e) => this._onTypeChange(e);
+    this.props.onChange(this.state.type.map(type => type.value), this.state.text);
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.type !== this.state.type || prevState.type !== this.state.text) {
-      this.props.onChange(this.state.type, this.state.text);
+    if (prevState.type.length !== this.state.type.length || prevState.text !== this.state.text) {
+      this.props.onChange(this.state.type.map(type => type.value), this.state.text);
     }
   }
 
-  _onTextChange(e) {
+  onTextChange(e) {
     let value = e.target.value;
-
     this.setState({text: value});
   }
 
-  _onTypeChange(e) {
-    let value = e.target.value;
-
-    this.setState({type: value});
+  onDelete(i) {
+    const types = this.state.type.slice(0)
+    types.splice(i, 1)
+    this.setState({type: types})
   }
 
+  onAddition(type) {
+    const types = [].concat(this.state.type, type)
+    this.setState({type: types})
+  }
 
+  onValidate(tag) {
+    return !this.state.type.find(t => t.value === tag.value);
+  }
 
   render() {
     return <div>
-      Type:<SelectType onChange={this.onTypeChange} value={this.state.type}/>
-      {this.state.type == "chata_reference" && <div>Text:<input type="text" className="mm-popup__input" value={this.state.text} onChange={this.onTextChange} /></div>}
+      Type:
+      <ReactTags
+          minQueryLength={1}
+          placeholderText={"Add new type"}
+          tags={this.state.type}
+          suggestions={SelectType()}
+          onValidate={this.onValidate.bind(this)}
+          onDelete={this.onDelete.bind(this)}
+          onAddition={this.onAddition.bind(this)}
+      />
+      {this.state.type == "chata_reference" && <div>Text:
+      <input type="text" className="mm-popup__input" value={this.state.text} onChange={this.onTextChange.bind(this)}/></div>}
     </div>;
   }
 }

@@ -35,7 +35,7 @@ export default class AnnotationsControllerService {
 
       this.create({
         title: 'New annotation',
-        content: <Prompt type="linear_plot" text="" onChange={promptChange}/>,
+        content: <Prompt type={["linear_plot"]} text="" onChange={promptChange}/>,
         buttons: {
           left: ['cancel'],
           right: [
