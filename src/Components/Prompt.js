@@ -86,9 +86,6 @@ export default class Prompt extends Component {
         maxSuggestionsLength={100}
         suggestionsFilter={this.filter.bind(this)}
       />
-      {this.state.text && <div>
-        ChaTa references: {this.state.text}
-      </div>}
     </div>;
   }
 }

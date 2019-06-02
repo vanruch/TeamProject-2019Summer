@@ -171,11 +171,12 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
   downloadedImage.height *= window.innerWidth / downloadedImage.width;
   downloadedImage.width = window.innerWidth;
 
-  const scaleUpAnnotations = () => annotations.map(({data: {x1, x2, y1, y2}}) => ({
+  const scaleUpAnnotations = () => annotations.map(({data: {x1, x2, y1, y2, type}}) => ({
     x1: x1 * downloadedImage.width,
     x2: x2 * downloadedImage.width,
     y1: y1 * downloadedImage.height,
-    y2: y2 * downloadedImage.height
+    y2: y2 * downloadedImage.height,
+    type
   }));
 
   return <div>

@@ -169,11 +169,11 @@ export default class AnnotationsControllerService {
         if (!this.isAnnotationSelected(pageIndex, annotationIndex)) {
           return annotation;
         }
-        const currentReferences = annotation.data.text.split(',').filter((text) => text.length > 0) || [];
+        const currentReferences = annotation.data.references || [];
         const additionalAnnotations = selectedIds.filter((id) => id !== annotation.id && !currentReferences.includes(id));
         return {
           ...annotation,
-          data: {...annotation.data, text: [...currentReferences, ...additionalAnnotations].join(',')}
+          data: {...annotation.data, references: [...currentReferences, ...additionalAnnotations]}
         };
       }));
     this.selectedAnnotations = [];

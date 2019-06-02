@@ -67,6 +67,7 @@ export default class AnnotationsService {
       headers: this.headers
     });
     const newIds = await res.json();
+    console.log(newIds)
     if (Array.isArray(newIds)) {
       this.annotationsControllerService.updateAnnotationsIds(pageIndex, newIds)
     }
