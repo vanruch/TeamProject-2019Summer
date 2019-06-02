@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import ReactTags from 'react-tag-autocomplete';
 import {availableTags, availableTypes} from '../common';
+import InfoIcon from "./InfoIcon";
 
 export default class Prompt extends Component {
   constructor(props) {
@@ -61,8 +62,12 @@ export default class Prompt extends Component {
 
 
   render() {
-    return <div className={'prompt-content'}>
-      Type:
+    return <div className='prompt-content'>
+      Type:<InfoIcon
+        title='Available types:'
+        items={availableTypes.map(t => t.name)}
+        id='types'
+      />
       <ReactTags
         minQueryLength={1}
         placeholderText={'Add new type'}
@@ -74,7 +79,11 @@ export default class Prompt extends Component {
         maxSuggestionsLength={100}
         suggestionsFilter={this.filter.bind(this)}
       />
-      Tags:
+      Tags:<InfoIcon
+        title='Available tags:'
+        items={availableTags.map(t => t.name)}
+        id='tags'
+      />
       <ReactTags
         minQueryLength={1}
         placeholderText={'Add new tag'}

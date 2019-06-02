@@ -17,6 +17,7 @@
     "react-scripts": "2.1.8",
     "react-tag-autocomplete": "^6.0.0-beta.1",
     "react-toastify": "^5.1.0",
+    "react-tooltip": "^3.10.0",
     "use-image": "^1.0.3",
     "yarn": "^1.15.2"
   },
