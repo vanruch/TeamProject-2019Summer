@@ -33,8 +33,17 @@ export default class Prompt extends Component {
   }
 
   onAddType(type) {
-    const types = [].concat(this.state.type, type);
+    let toAdd = [type];
+    this.addBaseType(toAdd, 'plot', type.value);
+    this.addBaseType(toAdd, 'chart', type.value);
+    const types = [].concat(this.state.type, toAdd);
     this.setState({type: types});
+  }
+
+  addBaseType(types, baseType, currentType) {
+    if (currentType !== baseType && currentType.includes(baseType) && !this.state.type.find(t => t.value === baseType)) {
+      types.push(availableTypes.find(availableType => availableType.value === baseType));
+    }
   }
 
   onValidateType(type) {
