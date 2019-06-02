@@ -1,13 +1,47 @@
 import React from 'react';
 import Prompt from '../Components/Prompt';
 import Popup from 'react-popup';
+import _ from 'lodash';
+
+class Stack {
+  stack = [];
+  constructor(maxSize=5) {
+    this.maxSize = maxSize;
+  }
+
+  push(entity) {
+    this.stack = [...this.stack.slice(-(this.maxSize - 1)), entity];
+  }
+
+  pop() {
+    if (this.stack.length <= 1) {
+      return;
+    }
+    this.stack = this.stack.slice(0, -1);
+  }
+
+  clear() {
+    this.stack = this.stack.slice(-1);
+  }
+
+  get top() {
+    return this.stack[this.stack.length - 1];
+  }
+}
 
 export default class AnnotationsControllerService {
   selectedAnnotations = [];
-  annotations = [];
+  get annotations() {
+    return this.stack.top;
+  }
+
+  set annotations(entity) {
+    this.stack.push(entity);
+  }
 
   constructor(messageService) {
     this.messageService = messageService;
+    this.stack = new Stack();
   }
 
   selectAnnotation(pageIndex, annotationIndex) {
@@ -131,7 +165,7 @@ export default class AnnotationsControllerService {
   }
 
   copySelectedAnnotations(copyOffset) {
-    const updatedAnnotations = [...this.annotations];
+    const updatedAnnotations = _.cloneDeep(this.annotations);
     this.selectedAnnotations.forEach(({pageIndex, annotationIndex}) => updatedAnnotations[pageIndex].push({
       ...updatedAnnotations[pageIndex][annotationIndex],
       data: {
@@ -146,11 +180,12 @@ export default class AnnotationsControllerService {
   }
 
   transformAnnotation(pageIndex, annotationIndex, newDataFields) {
-    this.annotations[pageIndex][annotationIndex].data = {
-      ...this.annotations[pageIndex][annotationIndex].data,
+    const updatedAnnotations = _.cloneDeep(this.annotations);
+    updatedAnnotations[pageIndex][annotationIndex].data = {
+      ...updatedAnnotations[pageIndex][annotationIndex].data,
       ...newDataFields
     };
-    this.annotations = [...this.annotations];
+    this.annotations = updatedAnnotations;
   }
 
   getSelectedAnnotationsIds() {
@@ -177,5 +212,13 @@ export default class AnnotationsControllerService {
         };
       }));
     this.selectedAnnotations = [];
+  }
+
+  undo() {
+    this.stack.pop();
+  }
+
+  clearHistory() {
+    this.stack.clear();
   }
 }

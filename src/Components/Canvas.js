@@ -7,7 +7,7 @@ import DrawingCanvas from './DrawingCanvas';
 import * as PropTypes from 'prop-types';
 import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 import {ServiceContext} from '../Services/SeviceContext';
-import Helper from './Common/Helper';
+// import Helper from './Common/Helper';
 import {Modal} from '@material-ui/core';
 import AnnotationInfoModal from './AnnotationInfoModal';
 
@@ -23,8 +23,8 @@ const MyMenu = ({onNewAdnotationClick, onConnectAnnotationClick, onCopyAnnotatio
   </Menu>;
 
 function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAnnotationIndex, annotations, onAnnotationMove, onAnnotationTransform, selectedAnnotationsIndex, showModal}) {
-  const [showZoomHelper, setShowZoomHelper] = useState(false);
-  const {helperService} = useContext(ServiceContext);
+  // const [showZoomHelper, setShowZoomHelper] = useState(false);
+  // const {helperService} = useContext(ServiceContext);
 
   const dragBound = ({x}) => {
     if (scale.x <= 1) {
