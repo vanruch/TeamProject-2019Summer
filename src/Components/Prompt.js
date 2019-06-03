@@ -66,7 +66,7 @@ export default class Prompt extends Component {
   }
 
   onValidateTag(tag) {
-    return !this.state.type.find(t => t.value === tag.value);
+    return !this.state.tags.find(t => t.value === tag.value);
   }
 
 
