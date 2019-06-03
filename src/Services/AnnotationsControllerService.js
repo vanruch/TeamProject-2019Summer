@@ -69,7 +69,7 @@ export default class AnnotationsControllerService {
 
   addAnnotationToPage(pageIndex, newAnnotation) {
     Popup.registerPlugin('prompt', function (callback) {
-      let defaultType = ["linear_plot"];
+      let defaultType = [];
       newAnnotation.data.type = defaultType;
       newAnnotation.data.text = null;
       newAnnotation.tags = [];
@@ -85,7 +85,7 @@ export default class AnnotationsControllerService {
 
       this.create({
         title: 'New annotation',
-        content: <Prompt type={["linear_plot"]} text="" tags={[]} onChange={promptChange}/>,
+        content: <Prompt type={defaultType} text="" tags={[]} onChange={promptChange}/>,
         buttons: {
           left: ['cancel'],
           right: [

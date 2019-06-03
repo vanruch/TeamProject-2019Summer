@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import ReactTags from 'react-tag-autocomplete';
 import {availableTags, availableTypes} from '../common';
+import InfoIcon from "./InfoIcon";
 
 export default class Prompt extends Component {
   constructor(props) {
@@ -32,8 +33,17 @@ export default class Prompt extends Component {
   }
 
   onAddType(type) {
-    const types = [].concat(this.state.type, type);
+    let toAdd = [type];
+    this.addBaseType(toAdd, 'plot', type.value);
+    this.addBaseType(toAdd, 'chart', type.value);
+    const types = [].concat(this.state.type, toAdd);
     this.setState({type: types});
+  }
+
+  addBaseType(types, baseType, currentType) {
+    if (currentType !== baseType && currentType.includes(baseType) && !this.state.type.find(t => t.value === baseType)) {
+      types.push(availableTypes.find(availableType => availableType.value === baseType));
+    }
   }
 
   onValidateType(type) {
@@ -61,8 +71,12 @@ export default class Prompt extends Component {
 
 
   render() {
-    return <div className={'prompt-content'}>
-      Type:
+    return <div className='prompt-content'>
+      Type:<InfoIcon
+        title='Available types:'
+        items={availableTypes.map(t => t.name)}
+        id='types'
+      />
       <ReactTags
         minQueryLength={1}
         placeholderText={'Add new type'}
@@ -74,7 +88,11 @@ export default class Prompt extends Component {
         maxSuggestionsLength={100}
         suggestionsFilter={this.filter.bind(this)}
       />
-      Tags:
+      Tags:<InfoIcon
+        title='Available tags:'
+        items={availableTags.map(t => t.name)}
+        id='tags'
+      />
       <ReactTags
         minQueryLength={1}
         placeholderText={'Add new tag'}

@@ -7,19 +7,19 @@ export const groupBy = (groupFunc) => (list) => list.reduce(
   }), {});
 
 export const availableTypes = [
+  {id: 13, name: "Plot", value: "plot"},
+  {id: 14, name: "Chart", value: "chart"},
   {id: 1, name: "Linear plot", value: "linear_plot"},
   {id: 2, name: "Pie chart", value: "pie_chart"},
   {id: 3, name: "Dot plot", value: "dot_plot"},
   {id: 4, name: "Column plot", value: "column_plot"},
   {id: 5, name: "Box plot", value: "box_plot"},
+  {id: 9, name: "Other plot", value: "other_plot"},
   {id: 6, name: "Table", value: "table"},
   {id: 8, name: "ChaTa reference", value: "chata_reference"},
-  {id: 9, name: "Other plot", value: "other_plot"},
   {id: 10, name: "Image", value: "image"},
   {id: 11, name: "Algorithm", value: "algorithm"},
-  {id: 12, name: "Diagram", value: "diagram"},
-  {id: 13, name: "Plot", value: "plot"},
-  {id: 14, name: "Chart", value: "chart"}
+  {id: 12, name: "Diagram", value: "diagram"}
 ];
 
 export const availableTags = [
