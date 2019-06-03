@@ -110,13 +110,11 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
         text: '',
         subRegions: []
       }
-    });
-    onAnnotationsChange();
+    }).then(onAnnotationsChange);
   };
 
   const onEditAnnotationClick = () => {
-    annotationsControllerService.editSelectedAnnotation();
-    onAnnotationsChange();
+    annotationsControllerService.editSelectedAnnotation().then(onAnnotationsChange);
   };
 
   const onDeleteAnnotationClick = () => {
