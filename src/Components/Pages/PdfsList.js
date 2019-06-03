@@ -7,6 +7,7 @@ import {Link} from 'react-router-dom';
 import InfiniteScroll from 'react-infinite-scroller';
 import {ServiceContext} from '../../Services/SeviceContext';
 import ThreeDotsSpinner from '../Common/ThreeDotsSpinner';
+import SelectStatus from '../SelectStatus';
 
 const styles = theme => ({
   root: {
@@ -44,6 +45,10 @@ const styles = theme => ({
   link: {
     textDecoration: 'none',
     color: '#000'
+  },
+  filter: {
+    padding: theme.spacing.unit * 4,
+    float:'left'
   }
 });
 
@@ -83,20 +88,37 @@ function PdfsList({classes}) {
   const [publications, setPublications] = useState([]);
   const [pagesLoaded, setPagesLoaded] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [publicationStatus, setPublicationStatus] = useState('ALL');
   const {publicationsService} = useContext(ServiceContext);
 
   useEffect(() => {
     const fetchData = async () => {
       const morePublications = await publicationsService.getPublicationPreviews(pagesLoaded);
       if (morePublications.length > 0) {
-        setPublications([...publications, ...morePublications]);
+        if (publicationStatus != 'ALL'){
+          setPublications([...publications, ...morePublications].filter( ({status}) => status === publicationStatus ));
+        }
+        else{
+          setPublications([...publications, ...morePublications]);
+        }
         setHasMore(true);
       }
     };
     fetchData();
   }, [pagesLoaded]);
 
+  const onSelectStatusChange = (e) => {
+    setPublicationStatus(e.target.value);
+    setPublications([]);
+    setPagesLoaded(1);
+  }
+
   return (
+    <div >
+      <div className={classes.filter}>
+        Status:
+        <SelectStatus value={publicationStatus}  onChange={onSelectStatusChange} />
+      </div>
     <InfiniteScroll
       loadMore={() => {
         setHasMore(false);
@@ -111,6 +133,7 @@ function PdfsList({classes}) {
         <ThreeDotsSpinner/>
       </div>
     </InfiniteScroll>
+    </div>
   );
 }
 
