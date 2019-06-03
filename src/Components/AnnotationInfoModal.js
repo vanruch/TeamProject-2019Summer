@@ -28,9 +28,9 @@ const AnnotationInfoModal = ({annotation, classes}) => <div style={getModalStyle
   <Typography variant="h3">
     {annotation.id ? `Annotation #${annotation.id}` : 'New annotation'}
   </Typography>
-  <Typography variant='h6'>
+  {annotation.creator && <Typography variant='h6'>
     Stworzony przez: {annotation.creator.displayName} {new Date(annotation.creationDate).toLocaleString()}
-  </Typography>
+  </Typography>}
   {annotation.data.type && <Typography variant="h6">
     Typy: {annotation.data.type.join(', ')}
   </Typography>}
@@ -40,9 +40,9 @@ const AnnotationInfoModal = ({annotation, classes}) => <div style={getModalStyle
   {annotation.data.references && annotation.data.references.length > 0 && <Typography variant="h6">
     Referencje: {annotation.data.references.join(', ')}
   </Typography>}
-  <Typography variant='p'>
+  {annotation.status && <Typography variant='p'>
     Status: {annotation.status}
-  </Typography>
+  </Typography>}
 </div>;
 
 export default withStyles(styles)(AnnotationInfoModal);
