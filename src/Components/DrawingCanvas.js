@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Layer, Rect, Text, Transformer} from 'react-konva';
+import {Image, Layer, Rect, Text, Transformer} from 'react-konva';
 import {availableTypes} from '../common';
 
 const getColorByIndex = (ind) => {
@@ -87,6 +87,7 @@ class DrawingCanvas extends Component {
   render() {
     return (
       <Layer>
+        <Image image={this.props.image} perfectDrawEnabled={false}/>
         {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2, type}, ind) =>
           <Rect onClick={(evt) => this.props.changeAnnotationIndex(ind, evt)}
                 onDblClick={() => this.props.showModal(ind)}
@@ -99,12 +100,13 @@ class DrawingCanvas extends Component {
                 strokeScaleEnabled={false}
                 name={`rect${ind}`}
                 key={ind}
+                perfectDrawEnabled={false}
           />
         )}
         {this.props.annotations && this.props.annotations.map(
-          ({x1, y1, type}, ind) => type && type.length > 0 && <Text x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)} />
+          ({x1, y1, type}, ind) => type && type.length > 0 && <Text x={x1+5} y={y1+5} key={ind} text={this.formatTypes(type)} fill={getColorByIndex(ind)} />
         )}
-        {this.selectedRects().map((rectName) => <TransformerComponent selectedShapeName={rectName}/>)}
+        {this.selectedRects().map((rectName) => <TransformerComponent key={rectName} selectedShapeName={rectName}/>)}
       </Layer>
     );
   }

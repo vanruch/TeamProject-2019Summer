@@ -1,5 +1,5 @@
 import useImage from 'use-image';
-import {Image, Layer, Stage} from 'react-konva';
+import {Stage} from 'react-konva';
 import {Item, Menu, MenuProvider} from 'react-contexify';
 import React, {useContext, useState} from 'react';
 import 'react-contexify/dist/ReactContexify.min.css';
@@ -8,8 +8,6 @@ import * as PropTypes from 'prop-types';
 import ThreeDotsSpinner from './Common/ThreeDotsSpinner';
 import {ServiceContext} from '../Services/SeviceContext';
 // import Helper from './Common/Helper';
-import {Modal} from '@material-ui/core';
-import AnnotationInfoModal from './AnnotationInfoModal';
 
 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
@@ -66,16 +64,14 @@ function MyCanvas({image, scale, offset, onBoundsChange, onScaleChange, changeAn
   return <div>
     {/*<Helper visible={showZoomHelper} text={getHelperText()}/>*/}
     <Stage width={image.width} height={image.height * scale.x} onWheel={onZoom}
-           scale={scale} x={offset.x} draggable dragBoundFunc={dragBound}
+           scale={scale} x={offset.x} draggable dragBoundFunc={dragBound} perfectDrawEnabled={false}
     >
-      <Layer>
-        <Image image={image}/>
-      </Layer>
       <DrawingCanvas
         changeAnnotationIndex={changeAnnotationIndex}
         annotations={annotations}
         onAnnotationMove={onAnnotationMove}
         showModal={showModal}
+        image={image}
         onAnnotationTransform={onAnnotationTransform}
         selectedAnnotations={selectedAnnotationsIndex}
       />
@@ -88,10 +84,9 @@ MyCanvas.propTypes = {
   props: PropTypes.any
 };
 
-const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAnnotationsChange}) => {
+const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAnnotationsChange, showAnnotationsInfoModal}) => {
   const [offset, setOffset] = useState({x: 0, y: 0});
   const [selectedAnnotationsIndex, setSelectedAnnotationsIndex] = useState(null);
-  const [showAnnotationInfoModal, setShowAnnotationInfoModal] = useState(null);
   const {annotationsControllerService} = useContext(ServiceContext);
   const [downloadedImage] = useImage(image);
   if (!downloadedImage) {
@@ -178,14 +173,6 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
   }));
 
   return <div>
-    <Modal
-      open={showAnnotationInfoModal !== null}
-      onClose={() => setShowAnnotationInfoModal(null)}
-      aria-labelledby="simple-modal-title"
-      aria-describedby="simple-modal-description"
-    >
-      <AnnotationInfoModal annotation={showAnnotationInfoModal}/>
-    </Modal>
     <MenuProvider id={`canvas_menu${id}`}>
       <MyCanvas image={downloadedImage} annotations={scaleUpAnnotations()}
                 scale={scale} offset={centerBounds(offset)}
@@ -195,7 +182,7 @@ const WithMenu = ({annotations, image, scale, id, pageIndex, onScaleChange, onAn
                 onScaleChange={onScaleChange}
                 changeAnnotationIndex={changeAnnotationIndex}
                 selectedAnnotationsIndex={selectedAnnotationsIndex}
-                showModal={(ind) => setShowAnnotationInfoModal(annotations[ind])}
+                showModal={showAnnotationsInfoModal}
       />
     </MenuProvider>
     <MyMenu id={`canvas_menu${id}`}
