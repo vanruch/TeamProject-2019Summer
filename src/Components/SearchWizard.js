@@ -195,7 +195,7 @@ const SearchWizard = ({classes, onClose, onSearch, searchParams}) => {
             />
           </div>
           <div className={`${classes.tags} ${classes.flexLine}`}>
-            <span>Tag: </span>
+            <span>Status: </span>
             <Select
               className={classes.tagSelect}
               value={params.status}
