@@ -59,13 +59,14 @@ export default class PublicationsService {
     return list;
   }
 
-  async getPublicationPreviews(pageNumber) {
+  async getPublicationPreviews(pageNumber, searchCriteria) {
     await this.authService.ensureLoggedIn();
     const {list: publications} = await fetchBody(`${apiUrl}/publications`, {
       method: 'POST',
       body: JSON.stringify({
         pageNumber,
-        pageSize: 8
+        pageSize: 8,
+        searchCriteria
       }),
       headers: this.headers
     });

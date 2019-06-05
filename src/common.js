@@ -25,3 +25,11 @@ export const availableTypes = [
 export const availableTags = [
   {id: 1, name: "To discuss", value: "to_discuss"}
 ];
+
+export const publicationStatuses = [
+  {value: 'ALL', name: 'All'},
+  {value: 'NEW', name: 'New'},
+  {value: 'AUTO_ANNOTATED', name: 'Auto annotated'},
+  {value: 'ANNOTATED', name: 'Annotated'},
+  {value: 'SUPER_ANNOTATED', name: 'Super annotated'},
+];
