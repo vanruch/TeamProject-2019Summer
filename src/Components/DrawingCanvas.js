@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {Layer, Rect, Transformer} from 'react-konva';
+import {Layer, Rect, Text, Transformer} from 'react-konva';
+import {availableTypes} from '../common';
 
 const getColorByIndex = (ind) => {
   // From https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -75,28 +76,36 @@ class DrawingCanvas extends Component {
   };
 
   selectedRects() {
-    return this.props.selectedAnnotations ? this.props.selectedAnnotations.map(({annotationIndex}) => `rect${annotationIndex}`) : [];
+    return this.props.selectedAnnotations ? this.props.selectedAnnotations.map(
+      ({annotationIndex}) => `rect${annotationIndex}`) : [];
+  }
+
+  formatTypes(types) {
+    return types.map(type => availableTypes.find(({value}) => value === type).name).join(',');
   }
 
   render() {
     return (
-        <Layer>
-          {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2}, ind) =>
-            <Rect onClick={(evt) => this.props.changeAnnotationIndex(ind, evt)}
-                  onDblClick={() => this.props.showModal(ind)}
-                  x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2 - x1) / initRectSize}
-                  scaleY={(y2 - y1) / initRectSize}
-                  draggable
-                  onDragEnd={(args) => this.props.onAnnotationMove(args, ind)}
-                  onTransformEnd={(args) => this.props.onAnnotationTransform(args, ind)}
-                  stroke={getColorByIndex(ind)}
-                  strokeScaleEnabled={false}
-                  name={`rect${ind}`}
-                  key={ind}
-            />
-          )}
-          {this.selectedRects().map((rectName) => <TransformerComponent selectedShapeName={rectName}/>)}
-        </Layer>
+      <Layer>
+        {this.props.annotations && this.props.annotations.map(({x1, y1, x2, y2, type}, ind) =>
+          <Rect onClick={(evt) => this.props.changeAnnotationIndex(ind, evt)}
+                onDblClick={() => this.props.showModal(ind)}
+                x={x1} y={y1} width={initRectSize} height={initRectSize} scaleX={(x2 - x1) / initRectSize}
+                scaleY={(y2 - y1) / initRectSize}
+                draggable
+                onDragEnd={(args) => this.props.onAnnotationMove(args, ind)}
+                onTransformEnd={(args) => this.props.onAnnotationTransform(args, ind)}
+                stroke={getColorByIndex(ind)}
+                strokeScaleEnabled={false}
+                name={`rect${ind}`}
+                key={ind}
+          />
+        )}
+        {this.props.annotations && this.props.annotations.map(
+          ({x1, y1, type}, ind) => type && type.length > 0 && <Text x={x1+5} y={y1+5} text={this.formatTypes(type)} fill={getColorByIndex(ind)} />
+        )}
+        {this.selectedRects().map((rectName) => <TransformerComponent selectedShapeName={rectName}/>)}
+      </Layer>
     );
   }
 }

@@ -7,6 +7,8 @@ import {Check} from '@material-ui/icons';
 import {windowsCloseEventHandler} from '../../utils';
 import {Prompt as RouterPrompt} from 'react-router-dom';
 
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
 function PdfView(props) {
   const [pages, setPages] = useState([]);
   const [annotations, setAnnotations] = useState([]);
@@ -26,6 +28,20 @@ function PdfView(props) {
     setChangesDetected(false);
     fetchData();
   }, [props.match.params.id]);
+
+  const keyDownListener = ({key, metaKey, ctrlKey}) => {
+    if (key === 'z' && ((isMac && metaKey) || (!isMac && ctrlKey))) {
+      annotationsControllerService.undo();
+      setAnnotations(annotationsControllerService.annotations);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', keyDownListener);
+    return () => {
+      window.removeEventListener('keydown', keyDownListener);
+    };
+  }, []);
 
   const onAnnotationsChange = () => {
     if (!changesDetected) {

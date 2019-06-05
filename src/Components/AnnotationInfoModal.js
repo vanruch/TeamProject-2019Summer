@@ -8,7 +8,7 @@ const styles = theme => ({
     width: 400,
     backgroundColor: theme.palette.background.paper,
     boxShadow: theme.shadows[5],
-    padding: theme.spacing.unit,
+    padding: theme.spacing(3),
     outline: 'none',
   },
 });
@@ -24,19 +24,25 @@ function getModalStyle() {
   };
 }
 
-const AnnotationInfoModal = ({annotation, classes}) => (<div style={getModalStyle()} className={classes.paper}>
+const AnnotationInfoModal = ({annotation, classes}) => <div style={getModalStyle()} className={classes.paper}>
   <Typography variant="h3">
     {annotation.id ? `Annotation #${annotation.id}` : 'New annotation'}
   </Typography>
+  {annotation.creator && <Typography variant='h6'>
+    Stworzony przez: {annotation.creator.displayName} {new Date(annotation.creationDate).toLocaleString()}
+  </Typography>}
   {annotation.data.type && <Typography variant="h6">
-    Types: {annotation.data.type.join(', ')}
+    Typy: {annotation.data.type.join(', ')}
   </Typography>}
-  {annotation.tags && annotation.tags.length && <Typography variant="h6">
-    Tags: {annotation.tags.map(t => t.name).join(', ')}
+  {annotation.tags && annotation.tags.length > 0 && <Typography variant="h6">
+    Tagi: {annotation.tags.map(t => t.name).join(', ')}
   </Typography>}
-  {annotation.data.text && annotation.data.text.length > 0 && <Typography variant="h6">
-    Refers to: {annotation.data.text}
+  {annotation.data.references && annotation.data.references.length > 0 && <Typography variant="h6">
+    Referencje: {annotation.data.references.join(', ')}
   </Typography>}
-</div>);
+  {annotation.status && <Typography variant='p'>
+    Status: {annotation.status}
+  </Typography>}
+</div>;
 
 export default withStyles(styles)(AnnotationInfoModal);

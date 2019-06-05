@@ -1,13 +1,47 @@
 import React from 'react';
 import Prompt from '../Components/Prompt';
 import Popup from 'react-popup';
+import _ from 'lodash';
+
+class Stack {
+  stack = [];
+  constructor(maxSize=5) {
+    this.maxSize = maxSize;
+  }
+
+  push(entity) {
+    this.stack = [...this.stack.slice(-(this.maxSize - 1)), entity];
+  }
+
+  pop() {
+    if (this.stack.length <= 1) {
+      return;
+    }
+    this.stack = this.stack.slice(0, -1);
+  }
+
+  clear() {
+    this.stack = this.stack.slice(-1);
+  }
+
+  get top() {
+    return this.stack[this.stack.length - 1];
+  }
+}
 
 export default class AnnotationsControllerService {
   selectedAnnotations = [];
-  annotations = [];
+  get annotations() {
+    return this.stack.top;
+  }
+
+  set annotations(entity) {
+    this.stack.push(entity);
+  }
 
   constructor(messageService) {
     this.messageService = messageService;
+    this.stack = new Stack();
   }
 
   selectAnnotation(pageIndex, annotationIndex) {
@@ -33,49 +67,53 @@ export default class AnnotationsControllerService {
     }
   }
 
-  addAnnotationToPage(pageIndex, newAnnotation) {
-    Popup.registerPlugin('prompt', function (callback) {
-      let defaultType = [];
-      newAnnotation.data.type = defaultType;
-      newAnnotation.data.text = null;
-      newAnnotation.tags = [];
-      let promptType = defaultType;
-      let promptText = null;
-      let promptTags = [];
+  async addAnnotationToPage(pageIndex, newAnnotation) {
+    const setAnnotationData = async (newAnnotation) => new Promise(resolve => {
+      Popup.registerPlugin('prompt', function (callback) {
+        let defaultType = [];
+        newAnnotation.data.type = defaultType;
+        newAnnotation.data.text = null;
+        newAnnotation.tags = [];
+        let promptType = defaultType;
+        let promptText = null;
+        let promptTags = [];
 
-      let promptChange = function (type, text, tags) {
-        promptType = type;
-        promptText = text;
-        promptTags = tags;
-      };
+        let promptChange = function (type, text, tags) {
+          promptType = type;
+          promptText = text;
+          promptTags = tags;
+        };
 
-      this.create({
-        title: 'New annotation',
-        content: <Prompt type={defaultType} text="" tags={[]} onChange={promptChange}/>,
-        buttons: {
-          left: ['cancel'],
-          right: [
-            {
-              text: 'Save',
-              key: '⌘+s',
-              className: 'success',
-              action: function () {
-                callback(promptType, promptText, promptTags);
-                Popup.close();
-              }
-            }]
-        }
+        this.create({
+          title: 'New annotation',
+          content: <Prompt type={defaultType} text="" tags={[]} onChange={promptChange}/>,
+          buttons: {
+            left: ['cancel'],
+            right: [
+              {
+                text: 'Save',
+                key: '⌘+s',
+                className: 'success',
+                action: function () {
+                  callback(promptType, promptText, promptTags);
+                  Popup.close();
+                }
+              }]
+          }
+        });
+      });
+
+      /** Call the plugin */
+      Popup.plugins().prompt(function (type, text, tags) {
+        newAnnotation.data.type = type;
+        newAnnotation.data.text = text;
+        newAnnotation.tags = tags;
+        resolve(newAnnotation);
       });
     });
-
-    /** Call the plugin */
-    Popup.plugins().prompt(function (type, text, tags) {
-      newAnnotation.data.type = type;
-      newAnnotation.data.text = text;
-      newAnnotation.tags = tags;
-    });
-    this.annotations[pageIndex] = [...this.annotations[pageIndex], newAnnotation];
-    this.annotations = [...this.annotations];
+    const updatedAnnotations = _.cloneDeep(this.annotations);
+    updatedAnnotations[pageIndex] = [...this.annotations[pageIndex], await setAnnotationData(newAnnotation)];
+    this.annotations = updatedAnnotations;
   }
 
   deleteSelectedAnnotations() {
@@ -84,54 +122,59 @@ export default class AnnotationsControllerService {
     this.selectedAnnotations = [];
   }
 
-  editSelectedAnnotation() {
+  async editSelectedAnnotation() {
     if (this.selectedAnnotations.length !== 1) {
       throw new Error('Only one annotation must be selected for edit');
     }
     const [{pageIndex, annotationIndex}] = this.selectedAnnotations;
-    Popup.registerPlugin('prompt', function (defaultType, defaultText, defaultTags, callback) {
-      let promptType = null;
-      let promptText = null;
-      let promptTags = [];
+    const setAnnotationData = async () => new Promise(resolve => {
+      Popup.registerPlugin('prompt', function (defaultType, defaultText, defaultTags, callback) {
+        let promptType = null;
+        let promptText = null;
+        let promptTags = [];
 
-      let promptChange = function (type, text, tags) {
-        promptType = type;
-        promptText = text;
-        promptTags = tags;
-      };
+        let promptChange = function (type, text, tags) {
+          promptType = type;
+          promptText = text;
+          promptTags = tags;
+        };
 
-      this.create({
-        title: 'Zmień adnotację',
-        content: <Prompt type={defaultType} text={defaultText} tags={defaultTags} onChange={promptChange}/>,
-        buttons: {
-          left: ['cancel'],
-          right: [
-            {
-              text: 'Save',
-              key: '⌘+s',
-              className: 'success',
-              action: function () {
-                callback(promptType, promptText, promptTags);
-                Popup.close();
-              }
-            }]
-        }
+        this.create({
+          title: 'Zmień adnotację',
+          content: <Prompt type={defaultType} text={defaultText} tags={defaultTags} onChange={promptChange}/>,
+          buttons: {
+            left: ['cancel'],
+            right: [
+              {
+                text: 'Save',
+                key: '⌘+s',
+                className: 'success',
+                action: function () {
+                  callback(promptType, promptText, promptTags);
+                  Popup.close();
+                }
+              }]
+          }
+        });
       });
-    });
 
-    let updateAnnotation = (type, text, tags) => {
-      this.annotations[pageIndex][annotationIndex].data.type = type;
-      this.annotations[pageIndex][annotationIndex].data.text = text;
-      this.annotations[pageIndex][annotationIndex].tags = tags;
-    };
-    const originalType = this.annotations[pageIndex][annotationIndex].data.type;
-    const originalText = this.annotations[pageIndex][annotationIndex].data.text;
-    const originalTags = this.annotations[pageIndex][annotationIndex].tags;
-    Popup.plugins().prompt(originalType, originalText, originalTags, updateAnnotation);
+      let updateAnnotation = (type, text, tags) => {
+        const updatedAnnotations = _.cloneDeep(this.annotations);
+        updatedAnnotations[pageIndex][annotationIndex].data.type = type;
+        updatedAnnotations[pageIndex][annotationIndex].data.text = text;
+        updatedAnnotations[pageIndex][annotationIndex].tags = tags;
+        resolve(updatedAnnotations);
+      };
+      const originalType = this.annotations[pageIndex][annotationIndex].data.type;
+      const originalText = this.annotations[pageIndex][annotationIndex].data.text;
+      const originalTags = this.annotations[pageIndex][annotationIndex].tags;
+      Popup.plugins().prompt(originalType, originalText, originalTags, updateAnnotation);
+    });
+    this.annotations = await setAnnotationData();
   }
 
   copySelectedAnnotations(copyOffset) {
-    const updatedAnnotations = [...this.annotations];
+    const updatedAnnotations = _.cloneDeep(this.annotations);
     this.selectedAnnotations.forEach(({pageIndex, annotationIndex}) => updatedAnnotations[pageIndex].push({
       ...updatedAnnotations[pageIndex][annotationIndex],
       data: {
@@ -146,11 +189,12 @@ export default class AnnotationsControllerService {
   }
 
   transformAnnotation(pageIndex, annotationIndex, newDataFields) {
-    this.annotations[pageIndex][annotationIndex].data = {
-      ...this.annotations[pageIndex][annotationIndex].data,
+    const updatedAnnotations = _.cloneDeep(this.annotations);
+    updatedAnnotations[pageIndex][annotationIndex].data = {
+      ...updatedAnnotations[pageIndex][annotationIndex].data,
       ...newDataFields
     };
-    this.annotations = [...this.annotations];
+    this.annotations = updatedAnnotations;
   }
 
   getSelectedAnnotationsIds() {
@@ -169,13 +213,21 @@ export default class AnnotationsControllerService {
         if (!this.isAnnotationSelected(pageIndex, annotationIndex)) {
           return annotation;
         }
-        const currentReferences = annotation.data.text.split(',').filter((text) => text.length > 0) || [];
+        const currentReferences = annotation.data.references || [];
         const additionalAnnotations = selectedIds.filter((id) => id !== annotation.id && !currentReferences.includes(id));
         return {
           ...annotation,
-          data: {...annotation.data, text: [...currentReferences, ...additionalAnnotations].join(',')}
+          data: {...annotation.data, references: [...currentReferences, ...additionalAnnotations]}
         };
       }));
     this.selectedAnnotations = [];
+  }
+
+  undo() {
+    this.stack.pop();
+  }
+
+  clearHistory() {
+    this.stack.clear();
   }
 }

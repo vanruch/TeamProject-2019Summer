@@ -11,6 +11,7 @@ import PageTitleComponent from './Components/PageTitleComponent';
 function App() {
   const {publicationsService, authService} = useContext(ServiceContext);
   const [username, setUsername] = useState(authService.username);
+  const [searchParams, setSearchParams] = useState(null);
   authService.setUsernameChangeListener(setUsername);
 
   const routes = [
@@ -18,7 +19,7 @@ function App() {
       path: '/',
       exact: true,
       appbarText: () => () => 'Wybierz Publikację',
-      main: () => <PdfsList username={username}/>
+      main: () => <PdfsList username={username} searchParams={searchParams}/>
     },
     {
       path: '/paper/:id',
@@ -37,7 +38,7 @@ function App() {
           key={index}
           path={route.path}
           exact={route.exact}
-          render={(props) => <BarWithDrawer pageTitleLoader={route.appbarText(props)}/>}
+          render={(props) => <BarWithDrawer searchParams={searchParams} onSearch={setSearchParams} pageTitleLoader={route.appbarText(props)}/>}
         />
       ))}
       {routes.map((route, index) => (

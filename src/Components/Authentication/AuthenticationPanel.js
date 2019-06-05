@@ -10,7 +10,7 @@ import UserDataForm from './UserDataForm';
 const AuthenticationPanel = () => {
   const {authService} = useContext(ServiceContext);
   const [showPopup, setShowPopup] = useState(false);
-  const [showLogin, setShowLogin] = useState(false)
+  const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState(authService.username);
 
   const login = async ({username, password}) => {
@@ -23,7 +23,7 @@ const AuthenticationPanel = () => {
     await authService.registration(username, firstName, lastName, email, password);
     setShowPopup(false);
     setUsername(authService.username);
-  }
+  };
 
   const logout = () => {
     authService.logOut();

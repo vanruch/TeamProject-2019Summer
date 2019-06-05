@@ -28,7 +28,7 @@ const styles = theme => ({
     borderRadius: 5
   },
   control: {
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing(2)
   },
   loading: {
     display: 'flex',
@@ -36,7 +36,7 @@ const styles = theme => ({
     width: '100%'
   },
   title: {
-    padding: theme.spacing.unit * 1,
+    padding: theme.spacing(1),
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     overflow: 'hidden'
@@ -57,8 +57,8 @@ class PdfPreview extends Component {
 
   render() {
     const {classes, src, key, publicationId, name} = this.props;
-    return <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={key}>
-    <div>
+    return <Grid item xs={12} sm={6} md={4} lg={3} key={key}>
+    <div style={{padding: '12px'}}>
       <Link to={`/paper/${publicationId}`} className={classes.link} title={name}>
         <Paper className={classes.paper} elevation={this.state.elevation}
                onMouseOver={this.onMouseOver}
@@ -79,7 +79,7 @@ PdfPreview.propTypes = {
   src: PropTypes.any
 };
 
-function PdfsList({classes}) {
+function PdfsList({classes, searchParams}) {
   const [publications, setPublications] = useState([]);
   const [pagesLoaded, setPagesLoaded] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -87,14 +87,14 @@ function PdfsList({classes}) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const morePublications = await publicationsService.getPublicationPreviews(pagesLoaded);
+      const morePublications = await publicationsService.getPublicationPreviews(pagesLoaded, searchParams);
       if (morePublications.length > 0) {
         setPublications([...publications, ...morePublications]);
         setHasMore(true);
       }
     };
     fetchData();
-  }, [pagesLoaded]);
+  }, [pagesLoaded, searchParams]);
 
   return (
     <InfiniteScroll

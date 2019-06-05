@@ -70,5 +70,6 @@ export default class AnnotationsService {
     if (Array.isArray(newIds)) {
       this.annotationsControllerService.updateAnnotationsIds(pageIndex, newIds)
     }
+    this.annotationsControllerService.clearHistory();
   }
 }
