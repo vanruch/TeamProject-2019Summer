@@ -23,7 +23,9 @@ export const availableTypes = [
 ];
 
 export const availableTags = [
-  {id: 1, name: "To discuss", value: "to_discuss"}
+  {id: 1, name: "To discuss", value: "to_discuss"},
+  {id: 2, name: "Hard case", value: "hard_case"},
+  {id: 3, name: "Multiple", value: "multiple"}
 ];
 
 export const publicationStatuses = [
