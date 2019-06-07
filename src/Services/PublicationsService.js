@@ -69,6 +69,7 @@ export default class PublicationsService {
       }),
       headers: this.headers
     });
+    console.log(publications[0]);
     const imagesSrc = await Promise.all(publications.map(({id}) => this.getPageData(id, 1)));
     return publications.map((page, ind) => ({...page, src: imagesSrc[ind].imageUrl}));
   }

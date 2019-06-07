@@ -57,19 +57,41 @@ export default class AnnotationsService {
     return groupBy(x => x.pageId)(withTags);
   }
 
-  async saveChanges(annotations, pageId, pageIndex) {
-    await this.authService.ensureLoggedIn();
-    const updatedAnnotations = annotations
+  // async saveChanges(annotations, pageId, pageIndex) {
+  //   await this.authService.ensureLoggedIn();
+  //   const updatedAnnotations = annotations
+  //     .map((a) => ({annotation: a.data, pageId, annotationsUsed: [], tags: a.tags.map(t => t.value)}));
+  //   const res = await fetch(`${apiUrl}/annotations/new`, {
+  //     method: 'POST',
+  //     body: JSON.stringify(updatedAnnotations),
+  //     headers: this.headers
+  //   });
+  //   const newIds = await res.json();
+  //   if (Array.isArray(newIds)) {
+  //     this.annotationsControllerService.updateAnnotationsIds(pageIndex, newIds)
+  //   }
+  //   this.annotationsControllerService.clearHistory();
+  // }
+
+  async saveChanges(annotationsOnPages, pages) {
+    let updatedAnnotations = [];
+    for (let i = 0; i < pages.length; i++) {
+      let pageId = pages[i].id;
+      updatedAnnotations += annotationsOnPages[i]
       .map((a) => ({annotation: a.data, pageId, annotationsUsed: [], tags: a.tags.map(t => t.value)}));
+    }
     const res = await fetch(`${apiUrl}/annotations/new`, {
       method: 'POST',
       body: JSON.stringify(updatedAnnotations),
       headers: this.headers
     });
     const newIds = await res.json();
-    if (Array.isArray(newIds)) {
-      this.annotationsControllerService.updateAnnotationsIds(pageIndex, newIds)
+    let idIndex = 0;
+    for (let i = 0; i < pages.length; i++) {
+      this.annotationsControllerService.updateAnnotationsIds(i, newIds.slice(idIndex, idIndex+annotationsOnPages[i].length));
+      idIndex += annotationsOnPages[i].length;
     }
     this.annotationsControllerService.clearHistory();
   }
+
 }
