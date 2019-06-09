@@ -16,7 +16,7 @@ function PdfView(props) {
   const [changesDetected, setChangesDetected] = useState(false);
   const [scale, setScale] = useState({x: 1, y: 1});
   const [showAnnotationInfoModal, setShowAnnotationInfoModal] = useState(null);
-  const {publicationsService, annotationsService, annotationsControllerService} = useContext(ServiceContext);
+  const {publicationsService, annotationsService, annotationsControllerService, messageService} = useContext(ServiceContext);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,12 +58,25 @@ function PdfView(props) {
   });
 
   const saveAnnotations = async () => {
+    let correctSave = true;
     for (let i = 0; i < pages.length; i++) {
-      await annotationsService.saveChanges(annotationsControllerService.annotations[i], pages[i].id, i);
+      try {
+        if (annotationsControllerService.annotations[i].length > 0) {
+          await annotationsService.saveChanges(annotationsControllerService.annotations[i], pages[i].id, i);
+        }
+      }
+      catch(error) {
+        correctSave = false;
+      } 
     }
-    setChangesDetected(false);
-    window.removeEventListener('beforeunload', windowsCloseEventHandler);
-    setAnnotations(annotationsControllerService.annotations);
+    if (correctSave){
+      setChangesDetected(false);
+      window.removeEventListener('beforeunload', windowsCloseEventHandler);
+      setAnnotations(annotationsControllerService.annotations);
+    }
+    else {
+      messageService.showError('Nastąpił błąd podczas wysyłania adnotacji.');
+    }
   };
 
   return (
